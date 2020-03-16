@@ -1,16 +1,33 @@
 package ee.valitit.project.exception;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class UserException {
+@Getter
+public class UserException extends Exception {
 
-    private int status;
-    private String message;
-    private long timeStamp;
+    private HttpStatus HttpStatus;
+
+    public UserException(String message, org.springframework.http.HttpStatus httpStatus) {
+        super(message);
+        HttpStatus = httpStatus;
+    }
+
+    public UserException(String message, Throwable cause, org.springframework.http.HttpStatus httpStatus) {
+        super(message, cause);
+        HttpStatus = httpStatus;
+    }
+
+    public UserException(String message) {
+        super(message);
+    }
+
+    public UserException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public UserException(Throwable cause) {
+        super(cause);
+    }
 
 }

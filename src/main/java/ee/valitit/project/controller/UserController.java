@@ -1,8 +1,8 @@
 package ee.valitit.project.controller;
 
 import ee.valitit.project.domain.User;
-import ee.valitit.project.exception.UserErrorException;
 import ee.valitit.project.exception.UserException;
+import ee.valitit.project.exception.UserExceptionsResponse;
 import ee.valitit.project.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,8 +19,8 @@ public class UserController {
     private UserService userService;
 
     @ExceptionHandler
-    public ResponseEntity<UserException> handleException(UserErrorException exc) {
-        UserException response = new UserException();
+    public ResponseEntity<UserExceptionsResponse> handleException(UserException exc) {
+        UserExceptionsResponse response = new UserExceptionsResponse();
         response.setMessage(exc.getMessage());
         response.setStatus(exc.getHttpStatus().value());
         response.setTimeStamp(System.currentTimeMillis());
@@ -33,21 +33,19 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<?> getUser(@PathVariable String userId) throws UserErrorException {
+    public ResponseEntity<?> getUser(@PathVariable String userId) throws UserException {
         Long id;
         try {
             id = Long.parseLong(userId);
         } catch (NumberFormatException e) {
-            throw new UserErrorException("Id should be a number!", HttpStatus.BAD_REQUEST);
+            throw new UserException("User could be found only by ID. Type ID should be a number!", HttpStatus.BAD_REQUEST);
         }
-        ResponseEntity<?> responseEntity;
         if(userService.isUserExistsById(id)) {
             User user = userService.getUser(id);
-            responseEntity = new ResponseEntity<>(user, HttpStatus.OK);
+            return new ResponseEntity<>(user, HttpStatus.OK);
         } else {
-            throw new UserErrorException("User with id " + userId + " not found!", HttpStatus.NOT_FOUND);
+            throw new UserException("User with id " + userId + " not found!", HttpStatus.NOT_FOUND);
         }
-        return responseEntity;
     }
 
     @DeleteMapping({"/", ""})
