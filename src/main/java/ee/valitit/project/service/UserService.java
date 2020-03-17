@@ -1,8 +1,11 @@
 package ee.valitit.project.service;
 
 import ee.valitit.project.domain.User;
+import ee.valitit.project.exception.UserException;
 import ee.valitit.project.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,9 +21,19 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User getUser(Long id) {
-        Optional<User> optUser = userRepository.findById(id);
-        return optUser.orElse(null);
+    public User getUser(String userId) throws UserException {
+        Long id;
+        try {
+            id = Long.parseLong(userId);
+        } catch (NumberFormatException e) {
+            throw new UserException("User could be found only by ID. Type ID should be a number!", HttpStatus.BAD_REQUEST);
+        }
+        if(isUserExistsById(id)) {
+            Optional<User> user = userRepository.findById(id);
+            return user.get();
+        } else {
+            throw new UserException("User with id " + userId + " not found!", HttpStatus.NOT_FOUND);
+        }
     }
 
     public void deleteUser(Long id) {

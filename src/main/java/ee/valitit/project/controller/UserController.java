@@ -18,15 +18,6 @@ public class UserController {
 
     private UserService userService;
 
-    @ExceptionHandler
-    public ResponseEntity<UserExceptionsResponse> handleException(UserException exc) {
-        UserExceptionsResponse response = new UserExceptionsResponse();
-        response.setMessage(exc.getMessage());
-        response.setStatus(exc.getHttpStatus().value());
-        response.setTimeStamp(System.currentTimeMillis());
-        return new ResponseEntity<>(response, exc.getHttpStatus());
-    }
-
     @GetMapping({"/", ""})
     public List<User> getUsers() {
         return userService.getUsersList();
@@ -34,18 +25,7 @@ public class UserController {
 
     @GetMapping("/{userId}")
     public ResponseEntity<?> getUser(@PathVariable String userId) throws UserException {
-        Long id;
-        try {
-            id = Long.parseLong(userId);
-        } catch (NumberFormatException e) {
-            throw new UserException("User could be found only by ID. Type ID should be a number!", HttpStatus.BAD_REQUEST);
-        }
-        if(userService.isUserExistsById(id)) {
-            User user = userService.getUser(id);
-            return new ResponseEntity<>(user, HttpStatus.OK);
-        } else {
-            throw new UserException("User with id " + userId + " not found!", HttpStatus.NOT_FOUND);
-        }
+        return new ResponseEntity<>(userService.getUser(userId), HttpStatus.OK);
     }
 
     @DeleteMapping({"/", ""})
