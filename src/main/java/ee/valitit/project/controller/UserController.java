@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @RestController
 @RequestMapping("/users")
-public class UserController {
+public class    UserController {
 
     private UserService userService;
 
@@ -29,19 +29,9 @@ public class UserController {
     }
 
     @DeleteMapping({"/", ""})
-    public ResponseEntity<?> deleteCompany(@RequestBody User user) {
-        ResponseEntity<?> responseEntity;
-        if (user != null && user.getId() != null) {
-            if (userService.isUserExistsById(user.getId())) {
-                userService.deleteUser(user.getId());
-                responseEntity = new ResponseEntity<>("User deleted!", HttpStatus.OK);
-            } else {
-                responseEntity = new ResponseEntity<>("User with id " + user.getId() + " not found!", HttpStatus.NOT_FOUND);
-            }
-        } else {
-            responseEntity = new ResponseEntity<>("User or id can't be null!", HttpStatus.BAD_REQUEST);
-        }
-        return responseEntity;
+    public ResponseEntity<?> deleteCompany(@RequestBody User user) throws UserException {
+        userService.deleteUser(user);
+        return new ResponseEntity<>("User deleted!", HttpStatus.OK);
     }
 
     @DeleteMapping({"/{userId}"})

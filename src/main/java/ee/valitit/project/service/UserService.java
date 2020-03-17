@@ -40,6 +40,18 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
+    public void deleteUser(User user) throws UserException {
+        if (user != null && user.getId() != null) {
+            if (isUserExistsById(user.getId())) {
+                userRepository.deleteById(user.getId());
+            } else {
+                throw new UserException("User with id " + user.getId() + " does not exist!", HttpStatus.NOT_FOUND);
+            }
+        } else {
+            throw new UserException("User and user ID can't be null!", HttpStatus.BAD_REQUEST);
+        }
+    }
+
     public void updateUser(User user) {
         userRepository.save(user);
     }
