@@ -13,10 +13,6 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class User {
 
-<<<<<<< HEAD
-=======
-    
->>>>>>> a9c204a680f156649e857badfed38baab3638948
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
