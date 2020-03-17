@@ -22,7 +22,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(response, exc.getHttpStatus());
     }
 
-    @ExceptionHandler({ ConstraintViolationException.class })
+    @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Object> handleConstraintViolation(ConstraintViolationException exc) {
         UserExceptionsResponse response = new UserExceptionsResponse();
         String messages = exc.getConstraintViolations().stream()
