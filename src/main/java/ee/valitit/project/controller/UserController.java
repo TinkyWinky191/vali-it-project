@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @AllArgsConstructor
@@ -35,20 +36,19 @@ public class    UserController {
     }
 
     @DeleteMapping({"/{userId}"})
-    public ResponseEntity<?> deleteCompanyById(@PathVariable Long userId) {
-        ResponseEntity<?> responseEntity;
-        if (userId != null && userService.isUserExistsById(userId)) {
-          userService.deleteUser(userId);
-          responseEntity = new ResponseEntity<>("User deleted!", HttpStatus.OK);
-        } else {
-            responseEntity = new ResponseEntity<>("User with id " + userId + " not found!", HttpStatus.NOT_FOUND);
-        }
-        return responseEntity;
+    public ResponseEntity<?> deleteCompanyById(@PathVariable String userId) throws UserException {
+        userService.deleteUser(userId);
+        return new ResponseEntity<>("User deleted!", HttpStatus.OK);
     }
 
-
-
-
-
-
+    @PostMapping({"", "/"})
+    public ResponseEntity<?> createOrUpdateUser(@RequestBody User user) throws UserException {
+        Long id = user.getId();
+        userService.createOrUpdateUser(user);
+        if (id != null) {
+            return new ResponseEntity<>("User updated!", HttpStatus.ACCEPTED);
+        } else {
+            return new ResponseEntity<>("User created!", HttpStatus.CREATED);
+        }
+    }
 }

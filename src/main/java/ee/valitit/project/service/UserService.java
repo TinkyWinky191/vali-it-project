@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,8 +37,18 @@ public class UserService {
         }
     }
 
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
+    public void deleteUser(String userId) throws UserException {
+        Long id;
+        try {
+            id = Long.parseLong(userId);
+        } catch (NumberFormatException e) {
+            throw new UserException("Type ID should be a number!", HttpStatus.BAD_REQUEST);
+        }
+        if (isUserExistsById(id)) {
+            userRepository.deleteById(id);
+        } else {
+            throw new UserException("User with id " + userId + " not found!", HttpStatus.NOT_FOUND);
+        }
     }
 
     public void deleteUser(User user) throws UserException {
@@ -52,12 +63,12 @@ public class UserService {
         }
     }
 
-    public void updateUser(User user) {
-        userRepository.save(user);
-    }
-
-    public void createUser(User user) {
-        userRepository.save(user);
+    public void createOrUpdateUser(User user) throws UserException {
+        if (user != null) {
+            userRepository.save(user);
+        } else {
+            throw new UserException("User cant be null!");
+        }
     }
 
     public boolean isUserExistsById(Long id) {
