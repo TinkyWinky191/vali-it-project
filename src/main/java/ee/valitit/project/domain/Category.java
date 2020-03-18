@@ -30,7 +30,6 @@ public class Category extends AuditableEntity{
     @Column(name = "description")
     private String description;
 
-    @NotNull(message = "Category should have user! Can't be null!")
     @ManyToOne(targetEntity = User.class, optional = false)
     @JoinColumn(name = "user_id")
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")

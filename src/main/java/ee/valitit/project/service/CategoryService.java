@@ -66,23 +66,39 @@ public class CategoryService {
     }
 
     public void createOrUpdateCategory(@Valid Category category) throws CustomException {
-            User user;
-            if (category.getUser() != null) {
-                user = category.getUser();
-            } else {
-                throw new CustomException("User's ID can't be null!", HttpStatus.BAD_REQUEST);
-            }
-            if (user.getId() != null) {
-                if (userRepository.existsById(user.getId())) {
-                    categoryRepository.save(category);
+            if (category.getId() != null) {
+                if (categoryRepository.existsById(category.getId())) {
+                    Category tempCategory = categoryRepository.findById(category.getId()).get();
+                    if (category.getUser() == null
+                            || category.getUser().getId() == null
+                            || !userRepository.existsById(category.getUser().getId())) {
+                        category.setUser(tempCategory.getUser());
+                        categoryRepository.save(category);
+                    }
                 } else {
-                    throw new CustomException("Cant find user with id: " + user.getId() + "! Category not created!", HttpStatus.BAD_REQUEST);
+                    throw new CustomException("Category with id " + category.getId() +
+                            " not found! Category not updated!", HttpStatus.NOT_FOUND);
                 }
             } else {
-                throw new CustomException("User's id must not be null! Category not created!", HttpStatus.BAD_REQUEST);
+                User user;
+                if (category.getUser() != null) {
+                    user = category.getUser();
+                } else {
+                    throw new CustomException("User can't be null!", HttpStatus.BAD_REQUEST);
+                }
+                if (user.getId() != null) {
+                    if (userRepository.existsById(user.getId())) {
+                        categoryRepository.save(category);
+                    } else {
+                        throw new CustomException("Cant find user with id: " + user.getId() +
+                                "! Category not created!", HttpStatus.BAD_REQUEST);
+                    }
+                } else {
+                    throw new CustomException(
+                            "User's id must not be null! Category not created!"
+                            , HttpStatus.BAD_REQUEST);
+                }
             }
-
-
     }
 
     public boolean isCategoryExistsById(Long id) {

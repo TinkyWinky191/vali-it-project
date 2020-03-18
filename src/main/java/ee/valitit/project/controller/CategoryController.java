@@ -13,33 +13,34 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
+@RequestMapping("/categories")
 public class CategoryController {
 
     private CategoryService categoryService;
 
-    @GetMapping({"/categories", "/categories/"})
+    @GetMapping({"/", ""})
     public List<Category> getCategories() {
         return categoryService.getCategoriesList();
     }
 
-    @GetMapping("/categories/{categoryId}")
+    @GetMapping("/{categoryId}")
     public ResponseEntity<?> getCategory(@PathVariable String categoryId) throws CustomException {
         return new ResponseEntity<>(categoryService.getCategory(categoryId), HttpStatus.OK);
     }
 
-    @DeleteMapping({"/categories/", "/categories"})
+    @DeleteMapping({"/", ""})
     public ResponseEntity<?> deleteCategory(@RequestBody Category category) throws CustomException {
         categoryService.deleteCategory(category);
         return new ResponseEntity<>("Category deleted!", HttpStatus.OK);
     }
 
-    @DeleteMapping({"/categories/{categoryId}"})
+    @DeleteMapping({"/{categoryId}"})
     public ResponseEntity<?> deleteCategoryById(@PathVariable String categoryId) throws CustomException {
         categoryService.deleteCategory(categoryId);
         return new ResponseEntity<>("Category deleted!", HttpStatus.OK);
     }
 
-    @PostMapping({"/a"})
+    @PostMapping({"/", ""})
     public ResponseEntity<?> createOrUpdateCategory(@RequestBody Category category) throws CustomException {
         Long id = category.getId();
         categoryService.createOrUpdateCategory(category);
