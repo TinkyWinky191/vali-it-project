@@ -2,6 +2,7 @@ package ee.valitit.project.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -32,6 +33,23 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         response.setStatus(HttpStatus.BAD_REQUEST.value());
         response.setTimeStamp(System.currentTimeMillis());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({TransactionSystemException.class})
+    public ResponseEntity<Object> handleException(TransactionSystemException exc) {
+        Throwable cause = exc.getCause().getCause();
+        if (cause instanceof ConstraintViolationException) {
+            UserExceptionsResponse response = new UserExceptionsResponse();
+            String messages = ((ConstraintViolationException) cause).getConstraintViolations().stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", "));
+            response.setMessage(messages);
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setTimeStamp(System.currentTimeMillis());
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(exc.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }
