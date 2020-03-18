@@ -83,20 +83,20 @@ public class CategoryService {
                 User user;
                 if (category.getUser() != null) {
                     user = category.getUser();
-                } else {
-                    throw new CustomException("User can't be null!", HttpStatus.BAD_REQUEST);
-                }
-                if (user.getId() != null) {
-                    if (userRepository.existsById(user.getId())) {
-                        categoryRepository.save(category);
+                    if (user.getId() != null) {
+                        if (userRepository.existsById(user.getId())) {
+                            categoryRepository.save(category);
+                        } else {
+                            throw new CustomException("Cant find user with id: " + user.getId() +
+                                    "! Category not created!", HttpStatus.BAD_REQUEST);
+                        }
                     } else {
-                        throw new CustomException("Cant find user with id: " + user.getId() +
-                                "! Category not created!", HttpStatus.BAD_REQUEST);
+                        throw new CustomException(
+                                "User's id must not be null! Category not created!"
+                                , HttpStatus.BAD_REQUEST);
                     }
                 } else {
-                    throw new CustomException(
-                            "User's id must not be null! Category not created!"
-                            , HttpStatus.BAD_REQUEST);
+                    throw new CustomException("User can't be null! Category not created!", HttpStatus.BAD_REQUEST);
                 }
             }
     }
