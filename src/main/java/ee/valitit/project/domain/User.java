@@ -1,16 +1,23 @@
 package ee.valitit.project.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "user")
+@EqualsAndHashCode(callSuper = false)
+@Entity
+@Table(name = "user")
 public class User extends AuditableEntity {
 
     @Id
@@ -31,14 +38,18 @@ public class User extends AuditableEntity {
     @Column(name = "last_name")
     private String lastName;
 
-    //@Pattern(regexp = "^[a-zA-Z0-9_!#$%&’*+/=?`{|}~^-]+(?:\\\\.[a-zA-Z0-9_!#$%&’*+/=?`{|}~^-]+)*@[a-zA-Z0-9-]+(?:\\\\.[a-zA-Z0-9-]+)*$"
-           // , message = "Not a valid email!")
+    @Pattern(regexp = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$"
+    , message = "Not a valid email!")
     @NotBlank(message = "Email can't be empty or null")
     @Column(name = "email")
     private String email;
 
     @Column(name = "gender")
     private boolean gender;
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
+    @JsonIgnoreProperties("user")
+    private Set<Category> categories = new HashSet<>();
 
 }
 

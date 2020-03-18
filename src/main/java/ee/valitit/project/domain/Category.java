@@ -10,7 +10,8 @@ import javax.validation.constraints.NotBlank;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "category")
+@Entity()
+@Table(name = "category")
 public class Category extends AuditableEntity{
 
     @Id
@@ -23,5 +24,9 @@ public class Category extends AuditableEntity{
 
     @Column(name = "description")
     private String description;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
 }
