@@ -2,7 +2,6 @@ package ee.valitit.project.controller;
 
 import ee.valitit.project.domain.User;
 import ee.valitit.project.exception.UserException;
-import ee.valitit.project.exception.UserExceptionsResponse;
 import ee.valitit.project.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -42,7 +41,7 @@ public class    UserController {
     }
 
     @PostMapping({"", "/"})
-    public ResponseEntity<?> createOrUpdateUser(@RequestBody User user) throws UserException {
+    public ResponseEntity<?> createOrUpdateUser(@RequestBody User user) {
         Long id = user.getId();
         userService.createOrUpdateUser(user);
         if (id != null) {

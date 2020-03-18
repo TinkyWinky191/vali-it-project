@@ -63,12 +63,8 @@ public class UserService {
         }
     }
 
-    public void createOrUpdateUser(User user) throws UserException {
-        if (user != null) {
+    public void createOrUpdateUser(@Valid User user) {
             userRepository.save(user);
-        } else {
-            throw new UserException("User cant be null!");
-        }
     }
 
     public boolean isUserExistsById(Long id) {
