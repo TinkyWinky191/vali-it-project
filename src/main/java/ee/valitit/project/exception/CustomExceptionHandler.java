@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(UserException.class)
-    public ResponseEntity<UserExceptionsResponse> handleException(UserException exc) {
-        UserExceptionsResponse response = new UserExceptionsResponse();
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<ExceptionsResponse> handleException(CustomException exc) {
+        ExceptionsResponse response = new ExceptionsResponse();
         response.setMessage(exc.getMessage());
         response.setStatus(exc.getHttpStatus().value());
         response.setTimeStamp(System.currentTimeMillis());
@@ -24,8 +24,8 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({ConstraintViolationException.class})
-    public ResponseEntity<UserExceptionsResponse> handleConstraintViolation(ConstraintViolationException exc) {
-        UserExceptionsResponse response = new UserExceptionsResponse();
+    public ResponseEntity<ExceptionsResponse> handleConstraintViolation(ConstraintViolationException exc) {
+        ExceptionsResponse response = new ExceptionsResponse();
         String messages = exc.getConstraintViolations().stream()
                 .map(ConstraintViolation::getMessage)
                 .collect(Collectors.joining(", "));
@@ -39,7 +39,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> handleException(TransactionSystemException exc) {
         Throwable cause = exc.getCause().getCause();
         if (cause instanceof ConstraintViolationException) {
-            UserExceptionsResponse response = new UserExceptionsResponse();
+            ExceptionsResponse response = new ExceptionsResponse();
             String messages = ((ConstraintViolationException) cause).getConstraintViolations().stream()
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.joining(", "));

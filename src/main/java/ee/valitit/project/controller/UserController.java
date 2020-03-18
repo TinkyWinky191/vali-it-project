@@ -1,15 +1,13 @@
 package ee.valitit.project.controller;
 
 import ee.valitit.project.domain.User;
-import ee.valitit.project.exception.UserException;
+import ee.valitit.project.exception.CustomException;
 import ee.valitit.project.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @AllArgsConstructor
@@ -25,18 +23,18 @@ public class    UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<?> getUser(@PathVariable String userId) throws UserException {
+    public ResponseEntity<?> getUser(@PathVariable String userId) throws CustomException {
         return new ResponseEntity<>(userService.getUser(userId), HttpStatus.OK);
     }
 
     @DeleteMapping({"/", ""})
-    public ResponseEntity<?> deleteCompany(@RequestBody User user) throws UserException {
+    public ResponseEntity<?> deleteUser(@RequestBody User user) throws CustomException {
         userService.deleteUser(user);
         return new ResponseEntity<>("User deleted!", HttpStatus.OK);
     }
 
     @DeleteMapping({"/{userId}"})
-    public ResponseEntity<?> deleteCompanyById(@PathVariable String userId) throws UserException {
+    public ResponseEntity<?> deleteUserById(@PathVariable String userId) throws CustomException {
         userService.deleteUser(userId);
         return new ResponseEntity<>("User deleted!", HttpStatus.OK);
     }

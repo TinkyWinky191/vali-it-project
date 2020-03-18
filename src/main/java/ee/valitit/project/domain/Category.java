@@ -1,16 +1,21 @@
 package ee.valitit.project.domain;
 
+import com.fasterxml.jackson.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity()
+@EqualsAndHashCode(callSuper = false)
+@Entity
 @Table(name = "category")
 public class Category extends AuditableEntity{
 
@@ -25,8 +30,11 @@ public class Category extends AuditableEntity{
     @Column(name = "description")
     private String description;
 
-    @ManyToOne
+    @NotNull(message = "Category should have user! Can't be null!")
+    @ManyToOne(targetEntity = User.class, optional = false)
     @JoinColumn(name = "user_id")
+    @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+    @JsonIdentityReference(alwaysAsId = true)
     private User user;
 
 }

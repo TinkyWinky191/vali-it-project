@@ -6,4 +6,6 @@ VALUES
 /*CATEGORIES*/
 INSERT INTO category(name, description, user_id)
 VALUES ('Programming', 'All about programming languages.', 1),
-        ('Languages', 'Languages learning.', 2);
+        ('Languages', 'Languages learning.', 2),
+        ('Programming', 'All about programming languages.', 2),
+        ('Languages', 'Languages learning.', 1);
