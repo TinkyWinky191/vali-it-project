@@ -82,8 +82,15 @@ public class UserService extends AuditableService<User> {
         }
     }
 
-    public void createOrUpdateUser(@Valid User user) {
+    public void createOrUpdateUser(@Valid User user) throws CustomException {
         super.checkCreateData(userRepository, user);
+        if (user.getId() == null) {
+            if (userRepository.existsByUsername(user.getUsername())) {
+                throw new CustomException("Username is already in use! User not created!", HttpStatus.BAD_REQUEST);
+            } else if (userRepository.existsByEmail(user.getEmail())) {
+                throw new CustomException("Email is already in use! User not created!", HttpStatus.BAD_REQUEST);
+            }
+        }
         userRepository.save(user);
     }
 

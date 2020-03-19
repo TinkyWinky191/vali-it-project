@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.UniqueElements;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -21,7 +22,7 @@ import java.util.Set;
 public class User extends AuditableEntity {
 
     @NotBlank(message = "Username can't be empty or null")
-    @Column(name = "username")
+    @Column(name = "username", unique = true)
     private String username;
 
     @NotBlank(message = "Password can't be empty or null")
@@ -37,7 +38,7 @@ public class User extends AuditableEntity {
     @Pattern(regexp = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$"
     , message = "Not a valid email!")
     @NotBlank(message = "Email can't be empty or null")
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "gender")

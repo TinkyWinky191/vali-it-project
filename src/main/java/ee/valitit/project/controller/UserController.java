@@ -40,7 +40,7 @@ public class    UserController {
     }
 
     @PostMapping({"", "/"})
-    public ResponseEntity<?> createOrUpdateUser(@RequestBody User user) {
+    public ResponseEntity<?> createOrUpdateUser(@RequestBody User user) throws CustomException {
         Long id = user.getId();
         userService.createOrUpdateUser(user);
         if (id != null) {
