@@ -39,14 +39,15 @@ public class    UserController {
         return new ResponseEntity<>("User deleted!", HttpStatus.OK);
     }
 
+    @PutMapping({"", "/"})
+    public ResponseEntity<?> updateUser(@RequestBody User user) {
+        userService.updateUser(user);
+        return new ResponseEntity<>("User updated!", HttpStatus.ACCEPTED);
+    }
+
     @PostMapping({"", "/"})
-    public ResponseEntity<?> createOrUpdateUser(@RequestBody User user) throws CustomException {
-        Long id = user.getId();
-        userService.createOrUpdateUser(user);
-        if (id != null) {
-            return new ResponseEntity<>("User updated!", HttpStatus.ACCEPTED);
-        } else {
-            return new ResponseEntity<>("User created!", HttpStatus.CREATED);
-        }
+    public ResponseEntity<?> registerUser(@RequestBody User user) throws CustomException {
+        userService.register(user);
+        return new ResponseEntity<>("User created!", HttpStatus.CREATED);
     }
 }

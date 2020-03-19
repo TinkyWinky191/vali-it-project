@@ -1,11 +1,13 @@
 package ee.valitit.project.service;
 
+import ee.valitit.project.domain.Role;
 import ee.valitit.project.domain.User;
 import ee.valitit.project.exception.CustomException;
+import ee.valitit.project.repository.RoleRepository;
 import ee.valitit.project.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
@@ -17,9 +19,25 @@ import java.util.Optional;
 public class UserService extends AuditableService<User> {
 
     private UserRepository userRepository;
+    private RoleRepository roleRepository;
+    private BCryptPasswordEncoder passwordEncoder;
 
     public List<User> getUsersList() {
         return userRepository.findAll();
+    }
+
+    public User register(User user) throws CustomException {
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new CustomException("Username is already in use! User not created!", HttpStatus.BAD_REQUEST);
+        } else if (userRepository.existsByEmail(user.getEmail())) {
+            throw new CustomException("Email is already in use! User not created!", HttpStatus.BAD_REQUEST);
+        } else if (user.getProfilePictureUrl() == null || user.getProfilePictureUrl().isEmpty()) {
+            user.setProfilePictureUrl("https://pngimage.net/wp-content/uploads/2018/05/default-user-image-png-7.png");
+        }
+        Role role = roleRepository.findByName("ROLE_USER");
+        user.getRoles().add(role);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
     }
 
     public User getUser(String searchingData) throws CustomException {
@@ -83,17 +101,8 @@ public class UserService extends AuditableService<User> {
         }
     }
 
-    public void createOrUpdateUser(@Valid User user) throws CustomException {
+    public void updateUser(@Valid User user) {
         super.checkCreateData(userRepository, user);
-        if (user.getId() == null) {
-            if (userRepository.existsByUsername(user.getUsername())) {
-                throw new CustomException("Username is already in use! User not created!", HttpStatus.BAD_REQUEST);
-            } else if (userRepository.existsByEmail(user.getEmail())) {
-                throw new CustomException("Email is already in use! User not created!", HttpStatus.BAD_REQUEST);
-            } else if (user.getProfilePictureUrl() == null || user.getProfilePictureUrl().isEmpty()) {
-                user.setProfilePictureUrl("https://pngimage.net/wp-content/uploads/2018/05/default-user-image-png-7.png");
-            }
-        }
         userRepository.save(user);
     }
 

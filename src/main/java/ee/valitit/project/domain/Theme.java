@@ -16,7 +16,7 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = false, exclude = "materials")
+@EqualsAndHashCode(callSuper = true, exclude = "materials")
 @Entity
 @Table(name = "theme")
 public class Theme extends AuditableEntity{
