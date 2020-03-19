@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @AllArgsConstructor
 @Service
-public class CategoryService {
+public class CategoryService extends AuditableService<Category> {
 
     private CategoryRepository categoryRepository;
     private UserRepository userRepository;
@@ -73,6 +73,7 @@ public class CategoryService {
                             || category.getUser().getId() == null
                             || !userRepository.existsById(category.getUser().getId())) {
                         category.setUser(tempCategory.getUser());
+                        super.checkCreateData(categoryRepository, category);
                         categoryRepository.save(category);
                     }
                 } else {

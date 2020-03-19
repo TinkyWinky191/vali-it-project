@@ -21,19 +21,39 @@ public class UserService extends AuditableService<User> {
         return userRepository.findAll();
     }
 
-    public User getUser(String userId) throws CustomException {
+    public User getUser(String searchingData) throws CustomException {
         Long id;
         try {
-            id = Long.parseLong(userId);
+            id = Long.parseLong(searchingData);
         } catch (NumberFormatException e) {
-            throw new CustomException("User could be found only by ID. Type ID should be a number!", HttpStatus.BAD_REQUEST);
+            return getUserByUsernameOrEmail(searchingData);
         }
-        if(isUserExistsById(id)) {
+        if (isUserExistsById(id)) {
             Optional<User> user = userRepository.findById(id);
             return user.get();
         } else {
-            throw new CustomException("User with id " + userId + " not found!", HttpStatus.NOT_FOUND);
+            throw new CustomException("User with id " + searchingData + " not found!", HttpStatus.NOT_FOUND);
         }
+    }
+
+    private User getUserByUsernameOrEmail(String usernameOrEmail) throws CustomException {
+        if (usernameOrEmail.contains("@")) {
+            if (userRepository.existsByEmail(usernameOrEmail)) {
+                return userRepository.findByEmail(usernameOrEmail);
+            } else {
+                throw new CustomException("User with email: " + usernameOrEmail + " not found!", HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            if (userRepository.existsByUsername(usernameOrEmail)) {
+                return userRepository.findByUsername(usernameOrEmail);
+            } else {
+                throw new CustomException("User with username: " + usernameOrEmail + " not found!", HttpStatus.BAD_REQUEST);
+            }
+        }
+    }
+
+    public boolean isUserExistsById(Long id) {
+        return userRepository.existsById(id);
     }
 
     public void deleteUser(String userId) throws CustomException {
@@ -63,12 +83,8 @@ public class UserService extends AuditableService<User> {
     }
 
     public void createOrUpdateUser(@Valid User user) {
-        super.checkData(userRepository, user);
+        super.checkCreateData(userRepository, user);
         userRepository.save(user);
-    }
-
-    public boolean isUserExistsById(Long id) {
-        return userRepository.existsById(id);
     }
 
 }
