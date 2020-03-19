@@ -35,6 +35,9 @@ public class User extends AuditableEntity {
     @Column(name = "last_name")
     private String lastName;
 
+    @Column(name = "profile_picture_url")
+    private String profilePictureUrl;
+
     @Pattern(regexp = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$"
     , message = "Not a valid email!")
     @NotBlank(message = "Email can't be empty or null")

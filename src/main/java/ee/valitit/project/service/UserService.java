@@ -4,6 +4,7 @@ import ee.valitit.project.domain.User;
 import ee.valitit.project.exception.CustomException;
 import ee.valitit.project.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -89,6 +90,8 @@ public class UserService extends AuditableService<User> {
                 throw new CustomException("Username is already in use! User not created!", HttpStatus.BAD_REQUEST);
             } else if (userRepository.existsByEmail(user.getEmail())) {
                 throw new CustomException("Email is already in use! User not created!", HttpStatus.BAD_REQUEST);
+            } else if (user.getProfilePictureUrl() == null || user.getProfilePictureUrl().isEmpty()) {
+                user.setProfilePictureUrl("https://pngimage.net/wp-content/uploads/2018/05/default-user-image-png-7.png");
             }
         }
         userRepository.save(user);

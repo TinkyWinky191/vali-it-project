@@ -22,9 +22,9 @@ public class    UserController {
         return userService.getUsersList();
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<?> getUser(@PathVariable String userId) throws CustomException {
-        return new ResponseEntity<>(userService.getUser(userId), HttpStatus.OK);
+    @GetMapping("/{searchingData}")
+    public ResponseEntity<?> getUser(@PathVariable String searchingData) throws CustomException {
+        return new ResponseEntity<>(userService.getUser(searchingData), HttpStatus.OK);
     }
 
     @DeleteMapping({"/", ""})

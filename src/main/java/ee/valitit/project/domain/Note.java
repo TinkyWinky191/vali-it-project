@@ -25,8 +25,9 @@ public class Note extends AuditableEntity{
     @Column(name = "name")
     private String name;
 
-    @Column(name = "description")
-    private String description;
+    @Lob
+    @Column(name = "content_text")
+    private String contentText;
 
     @ManyToOne(targetEntity = Material.class)
     @JoinColumn(name = "material_id")
