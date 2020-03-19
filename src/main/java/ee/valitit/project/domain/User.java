@@ -20,10 +20,6 @@ import java.util.Set;
 @Table(name = "user")
 public class User extends AuditableEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @NotBlank(message = "Username can't be empty or null")
     @Column(name = "username")
     private String username;

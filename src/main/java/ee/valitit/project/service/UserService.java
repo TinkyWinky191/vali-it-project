@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @AllArgsConstructor
 @Service
-public class UserService {
+public class UserService extends AuditableService<User> {
 
     private UserRepository userRepository;
 
@@ -63,7 +63,8 @@ public class UserService {
     }
 
     public void createOrUpdateUser(@Valid User user) {
-            userRepository.save(user);
+        super.checkData(userRepository, user);
+        userRepository.save(user);
     }
 
     public boolean isUserExistsById(Long id) {
