@@ -6,11 +6,13 @@ import ee.valitit.project.exception.CustomException;
 import ee.valitit.project.repository.RoleRepository;
 import ee.valitit.project.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -104,6 +106,10 @@ public class UserService extends AuditableService<User> {
     public void updateUser(@Valid User user) {
         super.checkCreateData(userRepository, user);
         userRepository.save(user);
+    }
+
+    public boolean hasPermissionBySearchingData(String searchingData, String authenticatedUsername) throws CustomException {
+        return getUser(searchingData).getUsername().equals(authenticatedUsername);
     }
 
 }

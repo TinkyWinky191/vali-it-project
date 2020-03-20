@@ -2,6 +2,8 @@ package ee.valitit.project.security.jwt;
 
 import ee.valitit.project.domain.Role;
 import io.jsonwebtoken.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,11 +18,10 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.Date;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.time.LocalDate.now;
-
+@Slf4j
 @Component
 public class JWTTokenProvider {
 
@@ -28,13 +29,11 @@ public class JWTTokenProvider {
     private String secretKey;
 
     @Value("${jwt.token.expired}")
-    private String tokensValidityInMillis;
+    private long tokensValidityInMillis;
 
+    @Autowired
+    @Qualifier("JWTService")
     private UserDetailsService userDetailsService;
-
-    public JWTTokenProvider(@Qualifier("jwt") UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
 
     @Bean
     public BCryptPasswordEncoder getPasswordEncoder() {
@@ -46,7 +45,7 @@ public class JWTTokenProvider {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
     }
 
-    public String createToken(String username, Set<Role> userRoles) {
+    public String createToken(String username, List<Role> userRoles) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("roles", getRoleNames(userRoles));
 
@@ -82,20 +81,16 @@ public class JWTTokenProvider {
     public boolean validateToken(String token) {
         try {
             Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
-            if (claims.getBody().getExpiration().before(new Date())) {
-                return false;
-            } else {
-                return true;
-            }
+            return !claims.getBody().getExpiration().before(new Date());
         } catch(JwtException | IllegalArgumentException exc) {
             throw new JWTAuthenticationException("Token is out of date or invalid!");
         }
     }
 
-    private Set<String> getRoleNames(Set<Role> userRoles) {
+    private List<String> getRoleNames(List<Role> userRoles) {
         return userRoles.stream()
                 .map(Role::getName)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 
 

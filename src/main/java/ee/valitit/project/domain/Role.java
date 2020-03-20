@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
 
 @Data
@@ -16,6 +17,6 @@ public class Role extends AuditableEntity {
     private String name;
 
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "roles")
-    private Set<User> users;
+    private Set<User> users = new HashSet<>();
 
 }

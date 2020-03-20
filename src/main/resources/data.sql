@@ -1,8 +1,8 @@
 /*USERS*/
 INSERT INTO user(created_date, last_modified_date, email, first_name, last_name, gender, username, password)
 VALUES
-       (now(), now(),'andreivaino@live.ru', 'Andrei', 'Vaino', true, 'Andrew191', 'pass'),
-        (now(), now(),'jack.oneill@gmail.ru', 'Jack', 'Oneill', true, 'Jack191', 'pass');
+       (now(), now(),'andreivaino@live.ru', 'Andrei', 'Vaino', true, 'Andrew191', '$2y$12$VgM3WyBXVdULghpMG9HiyOZo.csQCugoHa4.1UNn5WUjBUvQQWvxa'),
+        (now(), now(),'jack.oneill@gmail.ru', 'Jack', 'Oneill', true, 'Jack191', '$2y$12$VgM3WyBXVdULghpMG9HiyOZo.csQCugoHa4.1UNn5WUjBUvQQWvxa');
 /*ROLES*/
 INSERT INTO role(created_date, last_modified_date, name)
 VALUES

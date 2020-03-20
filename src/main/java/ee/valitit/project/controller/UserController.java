@@ -6,8 +6,11 @@ import ee.valitit.project.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @AllArgsConstructor
@@ -17,11 +20,13 @@ public class    UserController {
 
     private UserService userService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping({"/", ""})
     public List<User> getUsers() {
         return userService.getUsersList();
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#searchingData, principal.username)")
     @GetMapping("/{searchingData}")
     public ResponseEntity<?> getUser(@PathVariable String searchingData) throws CustomException {
         return new ResponseEntity<>(userService.getUser(searchingData), HttpStatus.OK);
@@ -39,15 +44,10 @@ public class    UserController {
         return new ResponseEntity<>("User deleted!", HttpStatus.OK);
     }
 
-    @PutMapping({"", "/"})
+    @PostMapping({"", "/"})
     public ResponseEntity<?> updateUser(@RequestBody User user) {
         userService.updateUser(user);
         return new ResponseEntity<>("User updated!", HttpStatus.ACCEPTED);
     }
 
-    @PostMapping({"", "/"})
-    public ResponseEntity<?> registerUser(@RequestBody User user) throws CustomException {
-        userService.register(user);
-        return new ResponseEntity<>("User created!", HttpStatus.CREATED);
-    }
 }

@@ -1,7 +1,6 @@
 package ee.valitit.project.security;
 
 import ee.valitit.project.domain.User;
-import ee.valitit.project.repository.UserRepository;
 import ee.valitit.project.security.jwt.JWTUserFactory;
 import ee.valitit.project.service.UserService;
 import lombok.Data;
@@ -12,17 +11,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+@Qualifier("JWTService")
 @Data
-@Qualifier("jwt")
 @Service
 public class JWTUserDetailsService implements UserDetailsService {
 
-    private UserRepository userRepository;
+    private final UserService userService;
 
     @SneakyThrows
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
+        User user = userService.getUser(username);
         if (user == null) {
             throw new UsernameNotFoundException(username);
         } else {
