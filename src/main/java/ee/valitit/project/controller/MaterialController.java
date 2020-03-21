@@ -6,6 +6,7 @@ import ee.valitit.project.service.MaterialService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class MaterialController {
 
     private MaterialService materialService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping({"/", ""})
     public List<Material> getCategories() {
         return materialService.getMaterialsList();

@@ -33,14 +33,11 @@ public class AuthenticationController {
     @PostMapping({"login/", "login"})
     public ResponseEntity<TokenResponseDTO> login(@RequestBody AuthenticationRequestDTO requestDto) throws CustomException {
         try {
-            String username = requestDto.getUsername();
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, requestDto.getPassword()));
-            User user = userService.getUser(username);
-
-            String token = jwtTokenProvider.createToken(username, user.getRoles());
-
-            return new ResponseEntity<>(new TokenResponseDTO(username, token), HttpStatus.OK);
-
+            String usernameOrEmail = requestDto.getUsernameOrEmail();
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(usernameOrEmail, requestDto.getPassword()));
+            User user = userService.getUser(usernameOrEmail);
+            String token = jwtTokenProvider.createToken(user.getUsername(), user.getRoles());
+            return new ResponseEntity<>(new TokenResponseDTO(user.getUsername(), token), HttpStatus.OK);
         } catch (AuthenticationException e) {
             log.warn(e.getMessage());
             throw new CustomException("Wrong password!", HttpStatus.FORBIDDEN);
