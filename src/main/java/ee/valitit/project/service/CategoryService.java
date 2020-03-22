@@ -4,106 +4,131 @@ import ee.valitit.project.domain.Category;
 import ee.valitit.project.domain.User;
 import ee.valitit.project.exception.CustomException;
 import ee.valitit.project.repository.CategoryRepository;
-import ee.valitit.project.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
+@Slf4j
 @AllArgsConstructor
 @Service
 public class CategoryService extends AuditableService<Category> {
 
+    private UserService userService;
     private CategoryRepository categoryRepository;
-    private UserRepository userRepository;
 
     public List<Category> getCategoriesList() {
         return categoryRepository.findAll();
     }
 
+    public List<Category> getCategoriesListByUser(User user) {
+        return categoryRepository.findByUser(user);
+    }
+
     public Category getCategory(String categoryId) throws CustomException {
-        Long id;
+        Long id = getLong(categoryId);
+        if (existsById(id)) {
+            return categoryRepository.findById(id).get();
+        }
+        return null;
+    }
+
+    private Long getLong(String categoryId) throws CustomException {
         try {
-            id = Long.parseLong(categoryId);
+            return Long.parseLong(categoryId);
         } catch (NumberFormatException e) {
             throw new CustomException("Category could be found only by ID. Type ID should be a number!", HttpStatus.BAD_REQUEST);
         }
-        if(isCategoryExistsById(id)) {
-            Optional<Category> category = categoryRepository.findById(id);
-            return category.get();
+    }
+
+    public boolean existsById(Long id) throws CustomException {
+        if (categoryRepository.existsById(id)) {
+            return true;
         } else {
-            throw new CustomException("Category with id " + categoryId + " not found!", HttpStatus.NOT_FOUND);
+            throw new CustomException("Category with id " + id + " does not exist!", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    public Category getCategoryByIdAndUser(User user, String categoryId) throws CustomException {
+        Long id = getLong(categoryId);
+        if (existsByIdAndUser(id, user)) {
+            return categoryRepository.findByIdAndUser(id, user);
+        }
+        return null;
+    }
+
+    public boolean existsByIdAndUser(Long id, User user) throws CustomException {
+        if (categoryRepository.existsByIdAndUser(id, user)) {
+            return true;
+        } else {
+            throw new CustomException("User with id " + user.getId() + " doesnt have category with id " +
+                    id + "!", HttpStatus.NOT_FOUND);
         }
     }
 
     public void deleteCategory(String categoryId) throws CustomException {
-        Long id;
-        try {
-            id = Long.parseLong(categoryId);
-        } catch (NumberFormatException e) {
-            throw new CustomException("Type ID should be a number!", HttpStatus.BAD_REQUEST);
-        }
-        if (isCategoryExistsById(id)) {
+        Long id = getLong(categoryId);
+        if (existsById(id)) {
             categoryRepository.deleteById(id);
-        } else {
-            throw new CustomException("Category with id " + categoryId + " not found!", HttpStatus.NOT_FOUND);
         }
     }
 
-    public void deleteCategory(Category category) throws CustomException {
+    public void deleteCategory(User user, Category category) throws CustomException {
+        if (isNotNullAndIdNotNull(category)) {
+            deleteCategory(category.getId().toString(), user);
+        }
+    }
+
+    public boolean isNotNullAndIdNotNull(Category category) throws CustomException {
         if (category != null && category.getId() != null) {
-            if (isCategoryExistsById(category.getId())) {
-                categoryRepository.deleteById(category.getId());
-            } else {
-                throw new CustomException("Category with id " + category.getId() + " does not exist!", HttpStatus.NOT_FOUND);
-            }
+            return true;
         } else {
-            throw new CustomException("Category and category ID can't be null!", HttpStatus.BAD_REQUEST);
+            throw new CustomException("Category and category ID can't be null! Not Updated!", HttpStatus.BAD_REQUEST);
         }
     }
 
-    public void createOrUpdateCategory(@Valid Category category) throws CustomException {
-            if (category.getId() != null) {
-                if (categoryRepository.existsById(category.getId())) {
-                    Category tempCategory = categoryRepository.findById(category.getId()).get();
-                    if (category.getUser() == null
-                            || category.getUser().getId() == null
-                            || !userRepository.existsById(category.getUser().getId())) {
-                        category.setUser(tempCategory.getUser());
-                        super.checkCreateData(categoryRepository, category);
-                        categoryRepository.save(category);
-                    }
-                } else {
-                    throw new CustomException("Category with id " + category.getId() +
-                            " not found! Category not updated!", HttpStatus.NOT_FOUND);
-                }
-            } else {
-                User user;
-                if (category.getUser() != null) {
-                    user = category.getUser();
-                    if (user.getId() != null) {
-                        if (userRepository.existsById(user.getId())) {
-                            categoryRepository.save(category);
-                        } else {
-                            throw new CustomException("Cant find user with id: " + user.getId() +
-                                    "! Category not created!", HttpStatus.BAD_REQUEST);
-                        }
-                    } else {
-                        throw new CustomException(
-                                "User's id must not be null! Category not created!"
-                                , HttpStatus.BAD_REQUEST);
-                    }
-                } else {
-                    throw new CustomException("User can't be null! Category not created!", HttpStatus.BAD_REQUEST);
-                }
+    public void deleteCategory(String categoryId, User user) throws CustomException {
+        Long id = getLong(categoryId);
+        if (existsById(id) && existsByIdAndUser(id, user)) {
+            categoryRepository.deleteById(id);
+        }
+    }
+
+    public void updateCategory(@Valid Category category) throws CustomException {
+        updateCategory(category, category.getId().toString());
+    }
+
+    public void updateCategory(@Valid Category category, String userId) throws CustomException {
+        User user = userService.getUser(userId);
+        if (isNotNullAndIdNotNull(category) && existsByIdAndUser(category.getId(), user)) {
+            Category tempCategory = categoryRepository.findById(category.getId()).get();
+            if (category.getUser() == null) {
+                category.setUser(user);
             }
+            if (category.getDescription() == null) {
+                category.setDescription(tempCategory.getDescription());
+            }
+            if (category.getThemes() == null || !category.getThemes().isEmpty()) {
+                category.setThemes(tempCategory.getThemes());
+            }
+            super.checkCreateData(categoryRepository, category);
+            categoryRepository.save(category);
+        }
     }
 
-    public boolean isCategoryExistsById(Long id) {
-        return categoryRepository.existsById(id);
+    public void createCategory(@Valid Category category, String userId) throws CustomException {
+        User user = userService.getUser(userId);
+        if (category.getUser() == null) {
+            category.setUser(user);
+        }
+        categoryRepository.save(category);
     }
 
+    public void createCategory(@Valid Category category) throws CustomException {
+        User user = userService.getUser(category.getUser().getId().toString());
+        createCategory(category, user.getId().toString());
+    }
 }

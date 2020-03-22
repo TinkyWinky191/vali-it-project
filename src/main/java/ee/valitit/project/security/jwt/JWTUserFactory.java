@@ -21,7 +21,7 @@ public final class JWTUserFactory {
                 user.getLastName(),
                 user.getProfilePictureUrl(),
                 user.getEmail(),
-                user.isGender(),
+                user.getGender(),
                 getGrantedAuthoritiesFromRoles(user.getRoles())
         );
     }

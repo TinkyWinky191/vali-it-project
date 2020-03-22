@@ -21,15 +21,15 @@ VALUES (now(), now(),'Programming', 'All about programming languages.', 1),
         (now(), now(),'Biology', 'All about biology.', 2),
         (now(), now(),'Technology', 'All about technology.', 1);
 /*THEMES*/
-INSERT INTO theme(created_date, last_modified_date, name, description, category_id)
-VALUES (now(), now(),'Java', 'All about java.', 1),
-        (now(), now(),'Python', 'All about python.', 1),
-        (now(), now(),'Russian', 'All about russian language.', 2),
-        (now(), now(),'Estonian', 'All about estonian language.', 2),
-        (now(), now(),'Reproduction', 'reproduction study...', 3),
-        (now(), now(),'Evolution', 'Theme about evolution.', 3),
-        (now(), now(),'Robotics', 'All about Robotics.', 4),
-        (now(), now(),'3D printing', 'All about 3D printing.', 4);
+INSERT INTO theme(created_date, last_modified_date, name, description, category_id, user_id)
+VALUES (now(), now(),'Java', 'All about java.', 1,1),
+        (now(), now(),'Python', 'All about python.', 1, 1),
+        (now(), now(),'Russian', 'All about russian language.', 2, 2),
+        (now(), now(),'Estonian', 'All about estonian language.', 2, 2),
+        (now(), now(),'Reproduction', 'reproduction study...', 3, 2),
+        (now(), now(),'Evolution', 'Theme about evolution.', 3, 2),
+        (now(), now(),'Robotics', 'All about Robotics.', 4, 1),
+        (now(), now(),'3D printing', 'All about 3D printing.', 4, 1);
 /*MATERIALS*/
 INSERT INTO material(created_date, last_modified_date, name, description, theme_id)
 VALUES (now(), now(),'JavaBasics', 'Java basics for beginners.', 1),

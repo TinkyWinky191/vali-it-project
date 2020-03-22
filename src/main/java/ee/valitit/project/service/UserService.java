@@ -6,15 +6,12 @@ import ee.valitit.project.exception.CustomException;
 import ee.valitit.project.repository.RoleRepository;
 import ee.valitit.project.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
-import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 @AllArgsConstructor
 @Service
@@ -42,6 +39,88 @@ public class UserService extends AuditableService<User> {
         return userRepository.save(user);
     }
 
+    public void deleteUser(String userId) throws CustomException {
+        Long id;
+        try {
+            id = Long.parseLong(userId);
+        } catch (NumberFormatException e) {
+            throw new CustomException("Type ID should be a number!", HttpStatus.BAD_REQUEST);
+        }
+        if (existsById(id)) {
+            userRepository.deleteById(id);
+        }
+    }
+
+    public boolean existsById(Long id) throws CustomException {
+        if (userRepository.existsById(id)) {
+            return true;
+        } else {
+            throw new CustomException("User with id " + id + " does not exist!", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    public void deleteUser(User user) throws CustomException {
+        if (isNotNullAndIdNotNull(user) && existsById(user.getId())) {
+            userRepository.deleteById(user.getId());
+        }
+    }
+
+    public boolean isNotNullAndIdNotNull(User user) throws CustomException {
+        if (user != null && user.getId() != null) {
+            return true;
+        } else {
+            throw new CustomException("User and user ID can't be null! Not Updated!", HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public void updateUser(@Valid User user) throws CustomException {
+        if (isNotNullAndIdNotNull(user) && existsById(user.getId())) {
+            if (user.getPassword() != null) {
+                user.setPassword(passwordEncoder.encode(user.getPassword()));
+            }
+            User tempUser = userRepository.findById(user.getId()).get();
+            if(user.getUsername() == null) {
+                user.setUsername(tempUser.getUsername());
+            }
+            if(user.getPassword() == null) {
+                user.setPassword(tempUser.getPassword());
+            }
+            if(user.getFirstName() == null) {
+                user.setFirstName(tempUser.getFirstName());
+            }
+            if(user.getLastName() == null) {
+                user.setLastName(tempUser.getLastName());
+            }
+            if(user.getProfilePictureUrl() == null) {
+                user.setProfilePictureUrl(tempUser.getProfilePictureUrl());
+            }
+            if(user.getGender() == null) {
+                user.setGender(tempUser.getGender());
+            }
+            if(user.getCategories() == null || user.getCategories().isEmpty()) {
+                user.setCategories(tempUser.getCategories());
+            }
+            if(user.getThemes() == null || user.getThemes().isEmpty()) {
+                user.setThemes(tempUser.getThemes());
+            }
+            if(user.getMaterials() == null || user.getMaterials().isEmpty()) {
+                user.setMaterials(tempUser.getMaterials());
+            }
+            if(user.getNotes() == null || user.getNotes().isEmpty()) {
+                user.setNotes(tempUser.getNotes());
+            }
+            if(user.getNotes() == null || user.getRoles().isEmpty()) {
+                user.setRoles(tempUser.getRoles());
+            }
+        }
+        super.checkCreateData(userRepository, user);
+        userRepository.save(user);
+    }
+
+    public boolean hasPermissionBySearchingData(String searchingData, String authenticatedUsername) throws CustomException {
+        return getUser(searchingData).getUsername().equals(authenticatedUsername);
+    }
+
     public User getUser(String searchingData) throws CustomException {
         Long id;
         try {
@@ -49,12 +128,11 @@ public class UserService extends AuditableService<User> {
         } catch (NumberFormatException e) {
             return getUserByUsernameOrEmail(searchingData);
         }
-        if (isUserExistsById(id)) {
-            Optional<User> user = userRepository.findById(id);
-            return user.get();
-        } else {
-            throw new CustomException("User with id " + searchingData + " not found!", HttpStatus.NOT_FOUND);
+        if (existsById(id)) {
+            return userRepository.findById(id).get();
         }
+        return null;
+
     }
 
     private User getUserByUsernameOrEmail(String usernameOrEmail) throws CustomException {
@@ -71,45 +149,6 @@ public class UserService extends AuditableService<User> {
                 throw new CustomException("User with username: " + usernameOrEmail + " not found!", HttpStatus.BAD_REQUEST);
             }
         }
-    }
-
-    public boolean isUserExistsById(Long id) {
-        return userRepository.existsById(id);
-    }
-
-    public void deleteUser(String userId) throws CustomException {
-        Long id;
-        try {
-            id = Long.parseLong(userId);
-        } catch (NumberFormatException e) {
-            throw new CustomException("Type ID should be a number!", HttpStatus.BAD_REQUEST);
-        }
-        if (isUserExistsById(id)) {
-            userRepository.deleteById(id);
-        } else {
-            throw new CustomException("User with id " + userId + " not found!", HttpStatus.NOT_FOUND);
-        }
-    }
-
-    public void deleteUser(User user) throws CustomException {
-        if (user != null && user.getId() != null) {
-            if (isUserExistsById(user.getId())) {
-                userRepository.deleteById(user.getId());
-            } else {
-                throw new CustomException("User with id " + user.getId() + " does not exist!", HttpStatus.NOT_FOUND);
-            }
-        } else {
-            throw new CustomException("User and user ID can't be null!", HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    public void updateUser(@Valid User user) {
-        super.checkCreateData(userRepository, user);
-        userRepository.save(user);
-    }
-
-    public boolean hasPermissionBySearchingData(String searchingData, String authenticatedUsername) throws CustomException {
-        return getUser(searchingData).getUsername().equals(authenticatedUsername);
     }
 
 }

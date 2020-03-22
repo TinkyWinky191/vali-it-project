@@ -1,109 +1,137 @@
 package ee.valitit.project.service;
 
-import ee.valitit.project.domain.Note;
 import ee.valitit.project.domain.Material;
+import ee.valitit.project.domain.Note;
+import ee.valitit.project.domain.User;
 import ee.valitit.project.exception.CustomException;
 import ee.valitit.project.repository.NoteRepository;
-import ee.valitit.project.repository.MaterialRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
+@Slf4j
 @AllArgsConstructor
 @Service
 public class NoteService extends AuditableService<Note> {
 
+    private UserService userService;
     private NoteRepository noteRepository;
-    private MaterialRepository materialRepository;
+    private MaterialService materialService;
 
     public List<Note> getNotesList() {
         return noteRepository.findAll();
     }
 
+    public List<Note> getNotesListByUser(User user) {
+        return noteRepository.findByUser(user);
+    }
+
     public Note getNote(String noteId) throws CustomException {
-        Long id;
+        Long id = getLong(noteId);
+        if (existsById(id)) {
+            return noteRepository.findById(id).get();
+        }
+        return null;
+    }
+
+    private Long getLong(String noteId) throws CustomException {
         try {
-            id = Long.parseLong(noteId);
+            return Long.parseLong(noteId);
         } catch (NumberFormatException e) {
             throw new CustomException("Note could be found only by ID. Type ID should be a number!", HttpStatus.BAD_REQUEST);
         }
-        if(isNoteExistsById(id)) {
-            Optional<Note> note = noteRepository.findById(id);
-            return note.get();
+    }
+
+    public boolean existsById(Long id) throws CustomException {
+        if (noteRepository.existsById(id)) {
+            return true;
         } else {
-            throw new CustomException("Note with id " + noteId + " not found!", HttpStatus.NOT_FOUND);
+            throw new CustomException("Note with id " + id + " does not exist!", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    public Note getNoteByIdAndUser(User user, String noteId) throws CustomException {
+        Long id = getLong(noteId);
+        if (existsByIdAndUser(id, user)) {
+            return noteRepository.findByIdAndUser(id, user);
+        }
+        return null;
+    }
+
+    public boolean existsByIdAndUser(Long id, User user) throws CustomException {
+        if (noteRepository.existsByIdAndUser(id, user)) {
+            return true;
+        } else {
+            throw new CustomException("User with id " + user.getId() + " doesnt have note with id " +
+                    id + "!", HttpStatus.NOT_FOUND);
         }
     }
 
     public void deleteNote(String noteId) throws CustomException {
-        Long id;
-        try {
-            id = Long.parseLong(noteId);
-        } catch (NumberFormatException e) {
-            throw new CustomException("Type ID should be a number!", HttpStatus.BAD_REQUEST);
-        }
-        if (isNoteExistsById(id)) {
+        Long id = getLong(noteId);
+        if (existsById(id)) {
             noteRepository.deleteById(id);
-        } else {
-            throw new CustomException("Note with id " + noteId + " not found!", HttpStatus.NOT_FOUND);
         }
     }
 
-    public void deleteNote(Note note) throws CustomException {
+    public void deleteNote(User user, Note note) throws CustomException {
+        if (isNotNullAndIdNotNull(note)) {
+            deleteNote(note.getId().toString(), user);
+        }
+    }
+
+    public boolean isNotNullAndIdNotNull(Note note) throws CustomException {
         if (note != null && note.getId() != null) {
-            if (isNoteExistsById(note.getId())) {
-                noteRepository.deleteById(note.getId());
-            } else {
-                throw new CustomException("Note with id " + note.getId() + " does not exist!", HttpStatus.NOT_FOUND);
-            }
+            return true;
         } else {
-            throw new CustomException("Note and note ID can't be null!", HttpStatus.BAD_REQUEST);
+            throw new CustomException("Note and note ID can't be null! Not Updated!", HttpStatus.BAD_REQUEST);
         }
     }
 
-    public void createOrUpdateNote(@Valid Note note) throws CustomException {
-            if (note.getId() != null) {
-                if (noteRepository.existsById(note.getId())) {
-                    Note tempNote = noteRepository.findById(note.getId()).get();
-                    if (note.getMaterial() == null
-                            || note.getMaterial().getId() == null
-                            || !materialRepository.existsById(note.getMaterial().getId())) {
-                        note.setMaterial(tempNote.getMaterial());
-                        super.checkCreateData(noteRepository, note);
-                        noteRepository.save(note);
-                    }
-                } else {
-                    throw new CustomException("Note with id " + note.getId() +
-                            " not found! Note not updated!", HttpStatus.NOT_FOUND);
-                }
-            } else {
-                Material material;
-                if (note.getMaterial() != null) {
-                    material = note.getMaterial();
-                    if (material.getId() != null) {
-                        if (materialRepository.existsById(material.getId())) {
-                            noteRepository.save(note);
-                        } else {
-                            throw new CustomException("Cant find material with id: " + material.getId() +
-                                    "! Note not created!", HttpStatus.BAD_REQUEST);
-                        }
-                    } else {
-                        throw new CustomException(
-                                "Material's id must not be null! Note not created!"
-                                , HttpStatus.BAD_REQUEST);
-                    }
-                } else {
-                    throw new CustomException("Material can't be null! Note not created!", HttpStatus.BAD_REQUEST);
-                }
-            }
+    public void deleteNote(String noteId, User user) throws CustomException {
+        Long id = getLong(noteId);
+        if (existsById(id) && existsByIdAndUser(id, user)) {
+            noteRepository.deleteById(id);
+        }
     }
 
-    public boolean isNoteExistsById(Long id) {
-        return noteRepository.existsById(id);
+    public void updateNote(@Valid Note note) throws CustomException {
+        updateNote(note, note.getId().toString());
+    }
+
+    public void updateNote(@Valid Note note, String userId) throws CustomException {
+        User user = userService.getUser(userId);
+        if (isNotNullAndIdNotNull(note) && existsByIdAndUser(note.getId(), user)) {
+            Note tempNote = noteRepository.findById(note.getId()).get();
+            if (note.getUser() == null) {
+                note.setUser(user);
+            }
+            if (note.getMaterial() == null) {
+                note.setMaterial(tempNote.getMaterial());
+            }
+            if (note.getContentText() == null) {
+                note.setContentText(tempNote.getContentText());
+            }
+            super.checkCreateData(noteRepository, note);
+            noteRepository.save(note);
+        }
+    }
+
+    public void createNote(@Valid Note note, String userId) throws CustomException {
+        User user = userService.getUser(userId);
+        Material material = note.getMaterial();
+        if (materialService.isNotNullAndIdNotNull(material) && materialService.existsByIdAndUser(material.getId(), user)) {
+            noteRepository.save(note);
+        }
+    }
+
+    public void createNote(@Valid Note note) throws CustomException {
+        User user = userService.getUser(note.getUser().getId().toString());
+        createNote(note, user.getId().toString());
     }
 
 }

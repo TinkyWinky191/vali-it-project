@@ -2,108 +2,139 @@ package ee.valitit.project.service;
 
 import ee.valitit.project.domain.Theme;
 import ee.valitit.project.domain.Material;
+import ee.valitit.project.domain.User;
 import ee.valitit.project.exception.CustomException;
-import ee.valitit.project.repository.ThemeRepository;
 import ee.valitit.project.repository.MaterialRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
+@Slf4j
 @AllArgsConstructor
 @Service
 public class MaterialService extends AuditableService<Material> {
 
+    private UserService userService;
     private MaterialRepository materialRepository;
-    private ThemeRepository themeRepository;
+    private ThemeService themeService;
 
     public List<Material> getMaterialsList() {
         return materialRepository.findAll();
     }
 
+    public List<Material> getMaterialsListByUser(User user) {
+        return materialRepository.findByUser(user);
+    }
+
     public Material getMaterial(String materialId) throws CustomException {
-        Long id;
+        Long id = getLong(materialId);
+        if (existsById(id)) {
+            return materialRepository.findById(id).get();
+        }
+        return null;
+    }
+
+    private Long getLong(String materialId) throws CustomException {
         try {
-            id = Long.parseLong(materialId);
+            return Long.parseLong(materialId);
         } catch (NumberFormatException e) {
             throw new CustomException("Material could be found only by ID. Type ID should be a number!", HttpStatus.BAD_REQUEST);
         }
-        if(isMaterialExistsById(id)) {
-            Optional<Material> material = materialRepository.findById(id);
-            return material.get();
+    }
+
+    public boolean existsById(Long id) throws CustomException {
+        if (materialRepository.existsById(id)) {
+            return true;
         } else {
-            throw new CustomException("Material with id " + materialId + " not found!", HttpStatus.NOT_FOUND);
+            throw new CustomException("Material with id " + id + " does not exist!", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    public Material getMaterialByIdAndUser(User user, String materialId) throws CustomException {
+        Long id = getLong(materialId);
+        if (existsByIdAndUser(id, user)) {
+            return materialRepository.findByIdAndUser(id, user);
+        }
+        return null;
+    }
+
+    public boolean existsByIdAndUser(Long id, User user) throws CustomException {
+        if (materialRepository.existsByIdAndUser(id, user)) {
+            return true;
+        } else {
+            throw new CustomException("User with id " + user.getId() + " doesnt have material with id " +
+                    id + "!", HttpStatus.NOT_FOUND);
         }
     }
 
     public void deleteMaterial(String materialId) throws CustomException {
-        Long id;
-        try {
-            id = Long.parseLong(materialId);
-        } catch (NumberFormatException e) {
-            throw new CustomException("Type ID should be a number!", HttpStatus.BAD_REQUEST);
-        }
-        if (isMaterialExistsById(id)) {
+        Long id = getLong(materialId);
+        if (existsById(id)) {
             materialRepository.deleteById(id);
-        } else {
-            throw new CustomException("Material with id " + materialId + " not found!", HttpStatus.NOT_FOUND);
         }
     }
 
-    public void deleteMaterial(Material material) throws CustomException {
+    public void deleteMaterial(User user, Material material) throws CustomException {
+        if (isNotNullAndIdNotNull(material)) {
+            deleteMaterial(material.getId().toString(), user);
+        }
+    }
+
+    public boolean isNotNullAndIdNotNull(Material material) throws CustomException {
         if (material != null && material.getId() != null) {
-            if (isMaterialExistsById(material.getId())) {
-                materialRepository.deleteById(material.getId());
-            } else {
-                throw new CustomException("Material with id " + material.getId() + " does not exist!", HttpStatus.NOT_FOUND);
-            }
+            return true;
         } else {
-            throw new CustomException("Material and material ID can't be null!", HttpStatus.BAD_REQUEST);
+            throw new CustomException("Material and material ID can't be null! Not Updated!", HttpStatus.BAD_REQUEST);
         }
     }
 
-    public void createOrUpdateMaterial(@Valid Material material) throws CustomException {
-            if (material.getId() != null) {
-                if (materialRepository.existsById(material.getId())) {
-                    Material tempMaterial = materialRepository.findById(material.getId()).get();
-                    if (material.getTheme() == null
-                            || material.getTheme().getId() == null
-                            || !themeRepository.existsById(material.getTheme().getId())) {
-                        material.setTheme(tempMaterial.getTheme());
-                        super.checkCreateData(materialRepository, material);
-                        materialRepository.save(material);
-                    }
-                } else {
-                    throw new CustomException("Material with id " + material.getId() +
-                            " not found! Material not updated!", HttpStatus.NOT_FOUND);
-                }
-            } else {
-                Theme theme;
-                if (material.getTheme() != null) {
-                    theme = material.getTheme();
-                    if (theme.getId() != null) {
-                        if (themeRepository.existsById(theme.getId())) {
-                            materialRepository.save(material);
-                        } else {
-                            throw new CustomException("Cant find theme with id: " + theme.getId() +
-                                    "! Material not created!", HttpStatus.BAD_REQUEST);
-                        }
-                    } else {
-                        throw new CustomException(
-                                "Theme's id must not be null! Material not created!"
-                                , HttpStatus.BAD_REQUEST);
-                    }
-                } else {
-                    throw new CustomException("Theme can't be null! Material not created!", HttpStatus.BAD_REQUEST);
-                }
-            }
+    public void deleteMaterial(String materialId, User user) throws CustomException {
+        Long id = getLong(materialId);
+        if (existsById(id) && existsByIdAndUser(id, user)) {
+            materialRepository.deleteById(id);
+        }
     }
 
-    public boolean isMaterialExistsById(Long id) {
-        return materialRepository.existsById(id);
+    public void updateMaterial(@Valid Material material) throws CustomException {
+        updateMaterial(material, material.getId().toString());
+    }
+
+    public void updateMaterial(@Valid Material material, String userId) throws CustomException {
+        User user = userService.getUser(userId);
+        if (isNotNullAndIdNotNull(material) && existsByIdAndUser(material.getId(), user)) {
+            Material tempMaterial = materialRepository.findById(material.getId()).get();
+            if (material.getUser() == null) {
+                material.setUser(user);
+            }
+            if (material.getTheme() == null) {
+                material.setTheme(tempMaterial.getTheme());
+            }
+            if (material.getDescription() == null) {
+                material.setDescription(tempMaterial.getDescription());
+            }
+            if (material.getNotes() == null || material.getNotes().isEmpty()) {
+                material.setNotes(tempMaterial.getNotes());
+            }
+            super.checkCreateData(materialRepository, material);
+            materialRepository.save(material);
+        }
+    }
+
+    public void createMaterial(@Valid Material material, String userId) throws CustomException {
+        User user = userService.getUser(userId);
+        Theme theme = material.getTheme();
+        if (themeService.isNotNullAndIdNotNull(theme) && themeService.existsByIdAndUser(theme.getId(), user)) {
+            materialRepository.save(material);
+        }
+    }
+
+    public void createMaterial(@Valid Material material) throws CustomException {
+        User user = userService.getUser(material.getUser().getId().toString());
+        createMaterial(material, user.getId().toString());
     }
 
 }

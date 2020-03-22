@@ -19,7 +19,7 @@ public class    UserController {
     private UserService userService;
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping({"/", ""})
+    @GetMapping({"/"})
     public List<User> getUsers() {
         return userService.getUsersList();
     }
@@ -30,20 +30,23 @@ public class    UserController {
         return new ResponseEntity<>(userService.getUser(searchingData), HttpStatus.OK);
     }
 
-    @DeleteMapping({"/", ""})
+    @PreAuthorize("hasRole('ADMIN') or #user.username == principal.username")
+    @DeleteMapping({"/"})
     public ResponseEntity<?> deleteUser(@RequestBody User user) throws CustomException {
         userService.deleteUser(user);
         return new ResponseEntity<>("User deleted!", HttpStatus.OK);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
     @DeleteMapping({"/{userId}"})
     public ResponseEntity<?> deleteUserById(@PathVariable String userId) throws CustomException {
         userService.deleteUser(userId);
         return new ResponseEntity<>("User deleted!", HttpStatus.OK);
     }
 
-    @PostMapping({"", "/"})
-    public ResponseEntity<?> updateUser(@RequestBody User user) {
+    @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#user.id, principal.username)")
+    @PutMapping({""})
+    public ResponseEntity<?> updateUser(@RequestBody User user) throws CustomException {
         userService.updateUser(user);
         return new ResponseEntity<>("User updated!", HttpStatus.ACCEPTED);
     }
