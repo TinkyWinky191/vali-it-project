@@ -30,10 +30,10 @@ public class AuditableEntity implements Serializable {
     @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;
 
-/*    @PreUpdate
+    @PreUpdate
     public void onUpdate() {
         this.lastModifiedDate = LocalDateTime.now(ZoneId.of("UTC+4"));
-    }*/
+    }
 
 }
 
