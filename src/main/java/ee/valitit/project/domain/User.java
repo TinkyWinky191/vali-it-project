@@ -31,7 +31,6 @@ public class User extends AuditableEntity {
     @Column(name = "username", unique = true)
     private String username;
 
-    @NotBlank(message = "Password can't be empty or null")
     @Column(name = "password")
     private String password;
 

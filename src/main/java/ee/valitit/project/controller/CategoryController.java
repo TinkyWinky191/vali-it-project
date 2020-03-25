@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @AllArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 public class CategoryController {
 
@@ -55,7 +56,7 @@ public class CategoryController {
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
     @GetMapping({"/users/{userId}/categories"})
-    public ResponseEntity<?> getCategorysByUserId(@PathVariable String userId) throws CustomException {
+    public ResponseEntity<?> getCategoriesByUserId(@PathVariable String userId) throws CustomException {
         User user = userService.getUser(userId);
         return new ResponseEntity<>(categoryService.getCategoriesListByUser(user), HttpStatus.OK);
     }

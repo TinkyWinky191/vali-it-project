@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @AllArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
 @RestController
 public class MaterialController {
 

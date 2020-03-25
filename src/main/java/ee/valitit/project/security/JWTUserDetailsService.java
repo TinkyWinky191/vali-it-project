@@ -1,10 +1,10 @@
 package ee.valitit.project.security;
 
 import ee.valitit.project.domain.User;
+import ee.valitit.project.exception.CustomException;
 import ee.valitit.project.security.jwt.JWTUserFactory;
 import ee.valitit.project.service.UserService;
 import lombok.Data;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,10 +18,14 @@ public class JWTUserDetailsService implements UserDetailsService {
 
     private final UserService userService;
 
-    @SneakyThrows
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userService.getUser(username);
+        User user;
+        try {
+             user = userService.getUser(username);
+        } catch (CustomException exc) {
+            throw new UsernameNotFoundException(username);
+        }
         if (user == null) {
             throw new UsernameNotFoundException(username);
         } else {

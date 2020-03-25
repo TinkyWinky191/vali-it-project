@@ -13,37 +13,36 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @AllArgsConstructor
 @RestController
-@RequestMapping("/auth/")
+@CrossOrigin(origins = "http://localhost:4200")
+@RequestMapping("/auth")
 public class AuthenticationController {
 
     private AuthenticationManager authenticationManager;
     private JWTTokenProvider jwtTokenProvider;
     private UserService userService;
 
-    @PostMapping({"login/", "login"})
+    @PostMapping({"/login"})
     public ResponseEntity<TokenResponseDTO> login(@RequestBody AuthenticationRequestDTO requestDto) throws CustomException {
+
         try {
             String usernameOrEmail = requestDto.getUsernameOrEmail();
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(usernameOrEmail, requestDto.getPassword()));
             User user = userService.getUser(usernameOrEmail);
             String token = jwtTokenProvider.createToken(user.getUsername(), user.getRoles());
-            return new ResponseEntity<>(new TokenResponseDTO(user.getUsername(), token), HttpStatus.OK);
+            log.info(usernameOrEmail + " is trying to login.");
+            return new ResponseEntity<>(new TokenResponseDTO(user.getId(), user.getUsername(), token), HttpStatus.OK);
         } catch (AuthenticationException e) {
             log.warn(e.getMessage());
-            throw new CustomException("Wrong password!", HttpStatus.FORBIDDEN);
+            throw new CustomException(e.getMessage(), HttpStatus.FORBIDDEN);
         }
     }
 
-    @PostMapping({"register/", "register"})
+    @PostMapping({"/register"})
     public ResponseEntity<?> registerUser(@RequestBody User user) throws CustomException {
         userService.register(user);
         return new ResponseEntity<>("Successfully registered!", HttpStatus.CREATED);

@@ -1,14 +1,23 @@
 package ee.valitit.project.exception;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.boot.json.JsonParseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.TransactionSystemException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
+import java.io.IOException;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -50,6 +59,16 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         } else {
             return new ResponseEntity<>(exc.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+
+    @ExceptionHandler({JsonMappingException.class})
+    public ResponseEntity<?> handleJsonMappingException(Exception ex) {
+        System.out.println("WTF");
+        return new ResponseEntity<>(
+                new ExceptionsResponse( HttpStatus.BAD_REQUEST.value(),
+                                "Wrong Json received!",
+                                        System.currentTimeMillis()), HttpStatus.BAD_REQUEST);
     }
 
 }

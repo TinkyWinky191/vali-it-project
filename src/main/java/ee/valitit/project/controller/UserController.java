@@ -4,15 +4,19 @@ import ee.valitit.project.domain.User;
 import ee.valitit.project.exception.CustomException;
 import ee.valitit.project.service.UserService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.security.Principal;
 
+@Slf4j
 @AllArgsConstructor
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/users")
 public class    UserController {
 
@@ -20,8 +24,9 @@ public class    UserController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping({"/"})
-    public List<User> getUsers() {
-        return userService.getUsersList();
+    public ResponseEntity<?> getUsers(@AuthenticationPrincipal Principal principal) {
+        log.debug("ADMIN " + principal.getName() + " requested all users.");
+        return new ResponseEntity<>(userService.getUsersList(), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#searchingData, principal.username)")
@@ -30,16 +35,16 @@ public class    UserController {
         return new ResponseEntity<>(userService.getUser(searchingData), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or #user.username == principal.username")
+    @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#user.id, principal.username)")
     @DeleteMapping({"/"})
     public ResponseEntity<?> deleteUser(@RequestBody User user) throws CustomException {
         userService.deleteUser(user);
         return new ResponseEntity<>("User deleted!", HttpStatus.OK);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
+    @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, #principal)")
     @DeleteMapping({"/{userId}"})
-    public ResponseEntity<?> deleteUserById(@PathVariable String userId) throws CustomException {
+    public ResponseEntity<?> deleteUserById(@PathVariable String userId, @AuthenticationPrincipal Principal principal) throws CustomException {
         userService.deleteUser(userId);
         return new ResponseEntity<>("User deleted!", HttpStatus.OK);
     }

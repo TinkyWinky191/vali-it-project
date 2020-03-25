@@ -11,6 +11,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
+import java.security.Principal;
 import java.util.List;
 
 @AllArgsConstructor
@@ -25,12 +26,18 @@ public class UserService extends AuditableService<User> {
         return userRepository.findAll();
     }
 
-    public User register(User user) throws CustomException {
+    public User register(@Valid User user) throws CustomException {
         if (userRepository.existsByUsername(user.getUsername())) {
             throw new CustomException("Username is already in use! User not created!", HttpStatus.BAD_REQUEST);
         } else if (userRepository.existsByEmail(user.getEmail())) {
             throw new CustomException("Email is already in use! User not created!", HttpStatus.BAD_REQUEST);
-        } else if (user.getProfilePictureUrl() == null || user.getProfilePictureUrl().isEmpty()) {
+        } else if (user.getPassword() == null ||
+                user.getPassword().isEmpty() ||
+                !user.getPassword().matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")) {
+            throw new CustomException("Password should contain minimum " +
+                    "eight characters, at least one letter and one number!", HttpStatus.BAD_REQUEST);
+        }
+        if (user.getProfilePictureUrl() == null || user.getProfilePictureUrl().isEmpty()) {
             user.setProfilePictureUrl("https://pngimage.net/wp-content/uploads/2018/05/default-user-image-png-7.png");
         }
         Role role = roleRepository.findByName("ROLE_USER");
@@ -79,6 +86,7 @@ public class UserService extends AuditableService<User> {
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
             }
             User tempUser = userRepository.findById(user.getId()).get();
+            user.setUsername(tempUser.getUsername());
             if(user.getUsername() == null) {
                 user.setUsername(tempUser.getUsername());
             }
@@ -117,8 +125,21 @@ public class UserService extends AuditableService<User> {
         userRepository.save(user);
     }
 
-    public boolean hasPermissionBySearchingData(String searchingData, String authenticatedUsername) throws CustomException {
-        return getUser(searchingData).getUsername().equals(authenticatedUsername);
+    public boolean hasPermissionBySearchingData(String searchingData, String authenticatedUsername) {
+        try {
+            System.out.println(authenticatedUsername);
+            return getUser(searchingData).getUsername().equals(authenticatedUsername);
+        } catch (Throwable exc) {
+            return false;
+        }
+    }
+
+    public boolean hasPermissionBySearchingData(String searchingData, Principal principal) {
+        try {
+            return getUser(searchingData).getUsername().equals(principal.getName());
+        } catch (Exception exc) {
+            return false;
+        }
     }
 
     public User getUser(String searchingData) throws CustomException {

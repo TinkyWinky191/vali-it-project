@@ -9,6 +9,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Data
 @MappedSuperclass
@@ -28,6 +29,11 @@ public class AuditableEntity implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;
+
+/*    @PreUpdate
+    public void onUpdate() {
+        this.lastModifiedDate = LocalDateTime.now(ZoneId.of("UTC+4"));
+    }*/
 
 }
 
