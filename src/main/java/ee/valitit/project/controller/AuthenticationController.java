@@ -34,7 +34,7 @@ public class AuthenticationController {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(usernameOrEmail, requestDto.getPassword()));
             User user = userService.getUser(usernameOrEmail);
             String token = jwtTokenProvider.createToken(user.getUsername(), user.getRoles());
-            log.info(usernameOrEmail + " is trying to login.");
+            log.info(usernameOrEmail + " is logged in.");
             return new ResponseEntity<>(new TokenResponseDTO(user.getId(), user.getUsername(), token), HttpStatus.OK);
         } catch (AuthenticationException e) {
             log.warn(e.getMessage());
@@ -44,7 +44,8 @@ public class AuthenticationController {
 
     @PostMapping({"/register"})
     public ResponseEntity<?> registerUser(@RequestBody User user) throws CustomException {
-        userService.register(user);
-        return new ResponseEntity<>("Successfully registered!", HttpStatus.CREATED);
+        User registered = userService.register(user);
+        log.info("New registration! " + registered);
+        return new ResponseEntity<>(registered, HttpStatus.OK);
     }
 }

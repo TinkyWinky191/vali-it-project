@@ -116,8 +116,8 @@ public class ThemeService extends AuditableService<Theme> {
             if (theme.getDescription() == null) {
                 theme.setDescription(tempTheme.getDescription());
             }
-            if (theme.getMaterials() == null || theme.getMaterials().isEmpty()) {
-                theme.setMaterials(tempTheme.getMaterials());
+            if (theme.getNotes() == null || theme.getNotes().isEmpty()) {
+                theme.setNotes(tempTheme.getNotes());
             }
             super.checkCreateData(themeRepository, theme);
             themeRepository.save(theme);

@@ -1,6 +1,6 @@
 package ee.valitit.project.service;
 
-import ee.valitit.project.domain.Material;
+import ee.valitit.project.domain.Theme;
 import ee.valitit.project.domain.Note;
 import ee.valitit.project.domain.User;
 import ee.valitit.project.exception.CustomException;
@@ -20,7 +20,7 @@ public class NoteService extends AuditableService<Note> {
 
     private UserService userService;
     private NoteRepository noteRepository;
-    private MaterialService materialService;
+    private ThemeService themeService;
 
     public List<Note> getNotesList() {
         return noteRepository.findAll();
@@ -110,8 +110,8 @@ public class NoteService extends AuditableService<Note> {
             if (note.getUser() == null) {
                 note.setUser(user);
             }
-            if (note.getMaterial() == null) {
-                note.setMaterial(tempNote.getMaterial());
+            if (note.getTheme() == null) {
+                note.setTheme(tempNote.getTheme());
             }
             if (note.getContentText() == null) {
                 note.setContentText(tempNote.getContentText());
@@ -123,8 +123,8 @@ public class NoteService extends AuditableService<Note> {
 
     public void createNote(@Valid Note note, String userId) throws CustomException {
         User user = userService.getUser(userId);
-        Material material = note.getMaterial();
-        if (materialService.isNotNullAndIdNotNull(material) && materialService.existsByIdAndUser(material.getId(), user)) {
+        Theme theme = note.getTheme();
+        if (themeService.isNotNullAndIdNotNull(theme) && themeService.existsByIdAndUser(theme.getId(), user)) {
             noteRepository.save(note);
         }
     }

@@ -12,7 +12,7 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true, exclude = {"user", "material"})
+@ToString(callSuper = true, exclude = {"user", "theme"})
 @Entity
 @Table(name = "note")
 public class Note extends AuditableEntity{
@@ -25,11 +25,11 @@ public class Note extends AuditableEntity{
     @Column(name = "content_text")
     private String contentText;
 
-    @ManyToOne(targetEntity = Material.class)
-    @JoinColumn(name = "material_id")
+    @ManyToOne(targetEntity = Theme.class)
+    @JoinColumn(name = "theme_id")
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
     @JsonIdentityReference(alwaysAsId = true)
-    private Material material;
+    private Theme theme;
 
     @ManyToOne(targetEntity = User.class)
     @JoinColumn(name = "user_id")

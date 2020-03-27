@@ -28,14 +28,14 @@ public class UserService extends AuditableService<User> {
 
     public User register(@Valid User user) throws CustomException {
         if (userRepository.existsByUsername(user.getUsername())) {
-            throw new CustomException("Username is already in use! User not created!", HttpStatus.BAD_REQUEST);
+            throw new CustomException("Username is already in use! Not created!", HttpStatus.INTERNAL_SERVER_ERROR);
         } else if (userRepository.existsByEmail(user.getEmail())) {
-            throw new CustomException("Email is already in use! User not created!", HttpStatus.BAD_REQUEST);
+            throw new CustomException("Email is already in use! Not created!", HttpStatus.INTERNAL_SERVER_ERROR);
         } else if (user.getPassword() == null ||
                 user.getPassword().isEmpty() ||
                 !user.getPassword().matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")) {
             throw new CustomException("Password should contain minimum " +
-                    "eight characters, at least one letter and one number!", HttpStatus.BAD_REQUEST);
+                    "eight characters, at least one letter and one number!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         if (user.getProfilePictureUrl() == null || user.getProfilePictureUrl().isEmpty()) {
             user.setProfilePictureUrl("https://pngimage.net/wp-content/uploads/2018/05/default-user-image-png-7.png");
@@ -51,7 +51,7 @@ public class UserService extends AuditableService<User> {
         try {
             id = Long.parseLong(userId);
         } catch (NumberFormatException e) {
-            throw new CustomException("Type ID should be a number!", HttpStatus.BAD_REQUEST);
+            throw new CustomException("Type ID should be a number!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
         if (existsById(id)) {
             userRepository.deleteById(id);
@@ -62,7 +62,7 @@ public class UserService extends AuditableService<User> {
         if (userRepository.existsById(id)) {
             return true;
         } else {
-            throw new CustomException("User with id " + id + " does not exist!", HttpStatus.NOT_FOUND);
+            throw new CustomException("User with id " + id + " does not exist!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -76,17 +76,31 @@ public class UserService extends AuditableService<User> {
         if (user != null && user.getId() != null) {
             return true;
         } else {
-            throw new CustomException("User and user ID can't be null! Not Updated!", HttpStatus.BAD_REQUEST);
+            throw new CustomException("User and user ID can't be null! Not Updated!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    public void updateUser(@Valid User user) throws CustomException {
+    public User updateUser(@Valid User user) throws CustomException {
         if (isNotNullAndIdNotNull(user) && existsById(user.getId())) {
             if (user.getPassword() != null) {
+                if (user.getPassword().isEmpty() ||
+                        !user.getPassword().matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")) {
+                    throw new CustomException("Password should contain minimum " +
+                            "eight characters, at least one letter and one number!", HttpStatus.INTERNAL_SERVER_ERROR);
+                }
                 user.setPassword(passwordEncoder.encode(user.getPassword()));
             }
             User tempUser = userRepository.findById(user.getId()).get();
-            user.setUsername(tempUser.getUsername());
+            if (user.getUsername() != null &&
+                    userRepository.existsByUsername(user.getUsername()) &&
+                    !user.getUsername().equals(tempUser.getUsername())) {
+                throw new CustomException("Username is already in use! Not updated!", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+            if (user.getUsername() != null &&
+                    userRepository.existsByEmail(user.getEmail()) &&
+                    !user.getEmail().equals(tempUser.getEmail())) {
+                throw new CustomException("Email is already in use! Not updated!", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
             if(user.getUsername() == null) {
                 user.setUsername(tempUser.getUsername());
             }
@@ -111,9 +125,6 @@ public class UserService extends AuditableService<User> {
             if(user.getThemes() == null || user.getThemes().isEmpty()) {
                 user.setThemes(tempUser.getThemes());
             }
-            if(user.getMaterials() == null || user.getMaterials().isEmpty()) {
-                user.setMaterials(tempUser.getMaterials());
-            }
             if(user.getNotes() == null || user.getNotes().isEmpty()) {
                 user.setNotes(tempUser.getNotes());
             }
@@ -122,7 +133,7 @@ public class UserService extends AuditableService<User> {
             }
         }
         super.checkCreateData(userRepository, user);
-        userRepository.save(user);
+       return userRepository.save(user);
     }
 
     public boolean hasPermissionBySearchingData(String searchingData, String authenticatedUsername) {
@@ -161,13 +172,13 @@ public class UserService extends AuditableService<User> {
             if (userRepository.existsByEmail(usernameOrEmail)) {
                 return userRepository.findByEmail(usernameOrEmail);
             } else {
-                throw new CustomException("User with email: " + usernameOrEmail + " not found!", HttpStatus.BAD_REQUEST);
+                throw new CustomException("User with email: " + usernameOrEmail + " not found!", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         } else {
             if (userRepository.existsByUsername(usernameOrEmail)) {
                 return userRepository.findByUsername(usernameOrEmail);
             } else {
-                throw new CustomException("User with username: " + usernameOrEmail + " not found!", HttpStatus.BAD_REQUEST);
+                throw new CustomException("User with username: " + usernameOrEmail + " not found!", HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
     }

@@ -1,7 +1,9 @@
 package ee.valitit.project.controller;
 
 import ee.valitit.project.domain.User;
+import ee.valitit.project.dto.UpdatedUserDTO;
 import ee.valitit.project.exception.CustomException;
+import ee.valitit.project.security.jwt.JWTTokenProvider;
 import ee.valitit.project.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,7 @@ import java.security.Principal;
 public class    UserController {
 
     private UserService userService;
+    private JWTTokenProvider provider;
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping({"/"})
@@ -52,8 +55,10 @@ public class    UserController {
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#user.id, principal.username)")
     @PutMapping({""})
     public ResponseEntity<?> updateUser(@RequestBody User user) throws CustomException {
-        userService.updateUser(user);
-        return new ResponseEntity<>("User updated!", HttpStatus.ACCEPTED);
+        User updatedUser = userService.updateUser(user);
+        String token = provider.createToken(updatedUser.getUsername(), updatedUser.getRoles());
+        log.info("User with id " + user.getId() + " updated!");
+        return new ResponseEntity<>(new UpdatedUserDTO(updatedUser, token), HttpStatus.OK);
     }
 
 }

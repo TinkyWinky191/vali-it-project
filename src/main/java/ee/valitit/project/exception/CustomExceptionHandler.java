@@ -53,9 +53,9 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
                     .map(ConstraintViolation::getMessage)
                     .collect(Collectors.joining(", "));
             response.setMessage(messages);
-            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             response.setTimeStamp(System.currentTimeMillis());
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         } else {
             return new ResponseEntity<>(exc.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

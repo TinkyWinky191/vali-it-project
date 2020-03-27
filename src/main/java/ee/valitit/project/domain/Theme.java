@@ -14,8 +14,8 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true, exclude = "materials")
-@ToString(callSuper = true, exclude = {"materials", "user", "category"})
+@EqualsAndHashCode(callSuper = true, exclude = "notes")
+@ToString(callSuper = true, exclude = {"notes", "user", "category"})
 @DynamicUpdate
 @Entity
 @Table(name = "theme")
@@ -43,7 +43,7 @@ public class Theme extends AuditableEntity{
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "theme")
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
     @JsonIdentityReference(alwaysAsId = true)
-    private Set<Material> materials = new HashSet<>();
+    private Set<Note> notes = new HashSet<>();
 
 
 
