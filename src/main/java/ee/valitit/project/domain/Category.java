@@ -7,6 +7,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,12 +20,16 @@ import java.util.Set;
 @Table(name = "category")
 public class Category extends AuditableEntity{
 
-    @NotBlank(message = "Name can't be empty or null")
+    @Pattern(regexp = "^.{0,16}$", message = "Title length can be max 16 symbols")
+    @NotBlank(message = "Title can't be empty")
     @Column(name = "name")
     private String name;
 
     @Column(name = "description")
     private String description;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 
     @ManyToOne(targetEntity = User.class, optional = false)
     @JoinColumn(name = "user_id")

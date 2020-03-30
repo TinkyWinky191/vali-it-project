@@ -101,7 +101,7 @@ public class CategoryService extends AuditableService<Category> {
         updateCategory(category, category.getId().toString());
     }
 
-    public void updateCategory(@Valid Category category, String userId) throws CustomException {
+    public Category updateCategory(@Valid Category category, String userId) throws CustomException {
         User user = userService.getUser(userId);
         if (isNotNullAndIdNotNull(category) && existsByIdAndUser(category.getId(), user)) {
             Category tempCategory = categoryRepository.findById(category.getId()).get();
@@ -111,20 +111,24 @@ public class CategoryService extends AuditableService<Category> {
             if (category.getDescription() == null) {
                 category.setDescription(tempCategory.getDescription());
             }
+            if (category.getImageUrl() == null) {
+                category.setImageUrl(tempCategory.getImageUrl());
+            }
             if (category.getThemes() == null || !category.getThemes().isEmpty()) {
                 category.setThemes(tempCategory.getThemes());
             }
             super.checkCreateData(categoryRepository, category);
-            categoryRepository.save(category);
+            return categoryRepository.save(category);
         }
+        return category;
     }
 
-    public void createCategory(@Valid Category category, String userId) throws CustomException {
+    public Category createCategory(@Valid Category category, String userId) throws CustomException {
         User user = userService.getUser(userId);
         if (category.getUser() == null) {
             category.setUser(user);
         }
-        categoryRepository.save(category);
+        return categoryRepository.save(category);
     }
 
     public void createCategory(@Valid Category category) throws CustomException {

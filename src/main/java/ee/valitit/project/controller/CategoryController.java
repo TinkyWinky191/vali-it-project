@@ -2,6 +2,7 @@ package ee.valitit.project.controller;
 
 import ee.valitit.project.domain.Category;
 import ee.valitit.project.domain.User;
+import ee.valitit.project.dto.DefaultResponseDTO;
 import ee.valitit.project.exception.CustomException;
 import ee.valitit.project.service.CategoryService;
 import ee.valitit.project.service.UserService;
@@ -73,7 +74,7 @@ public class CategoryController {
     public ResponseEntity<?> deleteCategory(@RequestBody Category category, @PathVariable String userId) throws CustomException {
         User user = userService.getUser(userId);
         categoryService.deleteCategory(user, category);
-        return new ResponseEntity<>("Category deleted!", HttpStatus.OK);
+        return new ResponseEntity<>(new DefaultResponseDTO("Theme deleted!", HttpStatus.OK.value()), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
@@ -81,21 +82,22 @@ public class CategoryController {
     public ResponseEntity<?> deleteCategoryById(@PathVariable String categoryId, @PathVariable String userId) throws CustomException {
         User user = userService.getUser(userId);
         categoryService.deleteCategory(categoryId, user);
-        return new ResponseEntity<>("Category deleted!", HttpStatus.OK);
+        return new ResponseEntity<>(new DefaultResponseDTO("Theme deleted!", HttpStatus.OK.value()), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
     @PostMapping({"users/{userId}/categories/"})
     public ResponseEntity<?> createCategory(@RequestBody Category category, @PathVariable String userId) throws CustomException {
-        categoryService.createCategory(category, userId);
-        return new ResponseEntity<>("Category created!", HttpStatus.CREATED);
+        Category createdCategory = categoryService.createCategory(category, userId);
+        return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
     @PutMapping({"users/{userId}/categories/"})
     public ResponseEntity<?> updateCategory(@RequestBody Category category, @PathVariable String userId) throws CustomException {
-        categoryService.updateCategory(category, userId);
-        return new ResponseEntity<>("Category updated!", HttpStatus.ACCEPTED);
+        Category tempCategory = categoryService.updateCategory(category, userId);
+        log.info("Category updated: " + tempCategory);
+        return new ResponseEntity<>(tempCategory, HttpStatus.ACCEPTED);
     }
 
 }
