@@ -99,11 +99,11 @@ public class ThemeService extends AuditableService<Theme> {
         }
     }
 
-    public void updateTheme(@Valid Theme theme) throws CustomException {
-        updateTheme(theme, theme.getId().toString());
+    public Theme updateTheme(@Valid Theme theme) throws CustomException {
+        return updateTheme(theme, theme.getId().toString());
     }
 
-    public void updateTheme(@Valid Theme theme, String userId) throws CustomException {
+    public Theme updateTheme(@Valid Theme theme, String userId) throws CustomException {
         User user = userService.getUser(userId);
         if (isNotNullAndIdNotNull(theme) && existsByIdAndUser(theme.getId(), user)) {
             Theme tempTheme = themeRepository.findById(theme.getId()).get();
@@ -120,21 +120,25 @@ public class ThemeService extends AuditableService<Theme> {
                 theme.setNotes(tempTheme.getNotes());
             }
             super.checkCreateData(themeRepository, theme);
-            themeRepository.save(theme);
+            return themeRepository.save(theme);
         }
+        return null;
     }
 
-    public void createTheme(@Valid Theme theme, String userId) throws CustomException {
+    public Theme createTheme(@Valid Theme theme, String userId) throws CustomException {
         User user = userService.getUser(userId);
         Category category = theme.getCategory();
+        theme.setUser(user);
         if (categoryService.isNotNullAndIdNotNull(category) && categoryService.existsByIdAndUser(category.getId(), user)) {
-            themeRepository.save(theme);
+            return themeRepository.save(theme);
+        } else {
+            return null;
         }
     }
 
-    public void createTheme(@Valid Theme theme) throws CustomException {
+    public Theme createTheme(@Valid Theme theme) throws CustomException {
         User user = userService.getUser(theme.getUser().getId().toString());
-        createTheme(theme, user.getId().toString());
+        return createTheme(theme, user.getId().toString());
     }
 
 }

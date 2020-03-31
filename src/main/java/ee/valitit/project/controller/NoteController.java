@@ -2,6 +2,7 @@ package ee.valitit.project.controller;
 
 import ee.valitit.project.domain.Note;
 import ee.valitit.project.domain.User;
+import ee.valitit.project.dto.DefaultResponseDTO;
 import ee.valitit.project.exception.CustomException;
 import ee.valitit.project.service.NoteService;
 import ee.valitit.project.service.UserService;
@@ -37,21 +38,21 @@ public class NoteController {
     @DeleteMapping({"/note/{noteId}"})
     public ResponseEntity<?> deleteNoteById(@PathVariable String noteId) throws CustomException {
         noteService.deleteNote(noteId);
-        return new ResponseEntity<>("Note deleted!", HttpStatus.OK);
+        return new ResponseEntity<>(new DefaultResponseDTO("Note deleted!", HttpStatus.OK.value()), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping({"/notes"})
     public ResponseEntity<?> updateNote(@RequestBody Note note) throws CustomException {
-        noteService.updateNote(note);
-        return new ResponseEntity<>("Note updated!", HttpStatus.CREATED);
+        Note updatedNote = noteService.updateNote(note);
+        return new ResponseEntity<>(updatedNote, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping({"/notes"})
     public ResponseEntity<?> createNote(@RequestBody Note note) throws CustomException {
-        noteService.createNote(note);
-        return new ResponseEntity<>("Note created!", HttpStatus.CREATED);
+        Note savedNote = noteService.createNote(note);
+        return new ResponseEntity<>(savedNote, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
@@ -73,7 +74,7 @@ public class NoteController {
     public ResponseEntity<?> deleteNote(@RequestBody Note note, @PathVariable String userId) throws CustomException {
         User user = userService.getUser(userId);
         noteService.deleteNote(user, note);
-        return new ResponseEntity<>("Note deleted!", HttpStatus.OK);
+        return new ResponseEntity<>(new DefaultResponseDTO("Note deleted!", HttpStatus.OK.value()), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
@@ -81,21 +82,22 @@ public class NoteController {
     public ResponseEntity<?> deleteNoteById(@PathVariable String noteId, @PathVariable String userId) throws CustomException {
         User user = userService.getUser(userId);
         noteService.deleteNote(noteId, user);
-        return new ResponseEntity<>("Note deleted!", HttpStatus.OK);
+        return new ResponseEntity<>(new DefaultResponseDTO("Note deleted!", HttpStatus.OK.value()), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
     @PostMapping({"users/{userId}/notes/"})
     public ResponseEntity<?> createNote(@RequestBody Note note, @PathVariable String userId) throws CustomException {
-        noteService.createNote(note, userId);
-        return new ResponseEntity<>("Note created!", HttpStatus.CREATED);
+        Note savedNote = noteService.createNote(note, userId);
+        System.out.println(savedNote.getContentText());
+        return new ResponseEntity<>(savedNote, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
     @PutMapping({"users/{userId}/notes/"})
     public ResponseEntity<?> updateNote(@RequestBody Note note, @PathVariable String userId) throws CustomException {
-        noteService.updateNote(note, userId);
-        return new ResponseEntity<>("Note updated!", HttpStatus.ACCEPTED);
+        Note updatedNote = noteService.updateNote(note, userId);
+        return new ResponseEntity<>(updatedNote, HttpStatus.ACCEPTED);
     }
 
 }

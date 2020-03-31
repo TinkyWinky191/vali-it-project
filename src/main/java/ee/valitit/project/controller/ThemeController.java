@@ -2,6 +2,7 @@ package ee.valitit.project.controller;
 
 import ee.valitit.project.domain.Theme;
 import ee.valitit.project.domain.User;
+import ee.valitit.project.dto.DefaultResponseDTO;
 import ee.valitit.project.exception.CustomException;
 import ee.valitit.project.service.ThemeService;
 import ee.valitit.project.service.UserService;
@@ -37,21 +38,21 @@ public class ThemeController {
     @DeleteMapping({"/theme/{themeId}"})
     public ResponseEntity<?> deleteThemeById(@PathVariable String themeId) throws CustomException {
         themeService.deleteTheme(themeId);
-        return new ResponseEntity<>("Theme deleted!", HttpStatus.OK);
+        return new ResponseEntity<>(new DefaultResponseDTO("Theme deleted!", HttpStatus.OK.value()), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping({"/themes"})
     public ResponseEntity<?> updateTheme(@RequestBody Theme theme) throws CustomException {
-        themeService.updateTheme(theme);
-        return new ResponseEntity<>("Theme updated!", HttpStatus.CREATED);
+        Theme updatedTheme = themeService.updateTheme(theme);
+        return new ResponseEntity<>(updatedTheme, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping({"/themes"})
     public ResponseEntity<?> createTheme(@RequestBody Theme theme) throws CustomException {
-        themeService.createTheme(theme);
-        return new ResponseEntity<>("Theme created!", HttpStatus.CREATED);
+        Theme savedTheme = themeService.createTheme(theme);
+        return new ResponseEntity<>(savedTheme, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
@@ -73,7 +74,7 @@ public class ThemeController {
     public ResponseEntity<?> deleteTheme(@RequestBody Theme theme, @PathVariable String userId) throws CustomException {
         User user = userService.getUser(userId);
         themeService.deleteTheme(user, theme);
-        return new ResponseEntity<>("Theme deleted!", HttpStatus.OK);
+        return new ResponseEntity<>(new DefaultResponseDTO("Theme deleted!", HttpStatus.OK.value()), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
@@ -81,21 +82,21 @@ public class ThemeController {
     public ResponseEntity<?> deleteThemeById(@PathVariable String themeId, @PathVariable String userId) throws CustomException {
         User user = userService.getUser(userId);
         themeService.deleteTheme(themeId, user);
-        return new ResponseEntity<>("Theme deleted!", HttpStatus.OK);
+        return new ResponseEntity<>(new DefaultResponseDTO("Theme deleted!", HttpStatus.OK.value()), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
     @PostMapping({"users/{userId}/themes/"})
     public ResponseEntity<?> createTheme(@RequestBody Theme theme, @PathVariable String userId) throws CustomException {
-        themeService.createTheme(theme, userId);
-        return new ResponseEntity<>("Theme created!", HttpStatus.CREATED);
+        Theme createdTheme = themeService.createTheme(theme, userId);
+        return new ResponseEntity<>(createdTheme, HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
     @PutMapping({"users/{userId}/themes/"})
     public ResponseEntity<?> updateTheme(@RequestBody Theme theme, @PathVariable String userId) throws CustomException {
-        themeService.updateTheme(theme, userId);
-        return new ResponseEntity<>("Theme updated!", HttpStatus.ACCEPTED);
+        Theme updatedTheme = themeService.updateTheme(theme, userId);
+        return new ResponseEntity<>(updatedTheme, HttpStatus.ACCEPTED);
     }
 
 }

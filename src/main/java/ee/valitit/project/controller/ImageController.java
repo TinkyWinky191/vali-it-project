@@ -40,6 +40,7 @@ public class ImageController {
         return new ResponseEntity<>(imageDTO, HttpStatus.OK);
     }
 
+    @PreAuthorize("permitAll()")
     @GetMapping("/getImage/{imageId}")
     public ResponseEntity<?> downloadFile(@PathVariable String imageId) throws CustomException {
         Image image = imageService.getFile(imageId);

@@ -74,7 +74,7 @@ public class CategoryController {
     public ResponseEntity<?> deleteCategory(@RequestBody Category category, @PathVariable String userId) throws CustomException {
         User user = userService.getUser(userId);
         categoryService.deleteCategory(user, category);
-        return new ResponseEntity<>(new DefaultResponseDTO("Theme deleted!", HttpStatus.OK.value()), HttpStatus.OK);
+        return new ResponseEntity<>(new DefaultResponseDTO("Category deleted!", HttpStatus.OK.value()), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")
@@ -82,7 +82,7 @@ public class CategoryController {
     public ResponseEntity<?> deleteCategoryById(@PathVariable String categoryId, @PathVariable String userId) throws CustomException {
         User user = userService.getUser(userId);
         categoryService.deleteCategory(categoryId, user);
-        return new ResponseEntity<>(new DefaultResponseDTO("Theme deleted!", HttpStatus.OK.value()), HttpStatus.OK);
+        return new ResponseEntity<>(new DefaultResponseDTO("Category deleted!", HttpStatus.OK.value()), HttpStatus.OK);
     }
 
     @PreAuthorize("hasRole('ADMIN') or @userService.hasPermissionBySearchingData(#userId, principal.username)")

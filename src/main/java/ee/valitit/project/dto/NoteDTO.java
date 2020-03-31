@@ -9,6 +9,6 @@ public class NoteDTO {
 
     private Long id;
     private String name;
-    private String contentText;
+    private byte[] contentText;
 
 }

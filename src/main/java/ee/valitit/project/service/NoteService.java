@@ -99,11 +99,11 @@ public class NoteService extends AuditableService<Note> {
         }
     }
 
-    public void updateNote(@Valid Note note) throws CustomException {
-        updateNote(note, note.getId().toString());
+    public Note updateNote(@Valid Note note) throws CustomException {
+        return updateNote(note, note.getId().toString());
     }
 
-    public void updateNote(@Valid Note note, String userId) throws CustomException {
+    public Note updateNote(@Valid Note note, String userId) throws CustomException {
         User user = userService.getUser(userId);
         if (isNotNullAndIdNotNull(note) && existsByIdAndUser(note.getId(), user)) {
             Note tempNote = noteRepository.findById(note.getId()).get();
@@ -117,21 +117,24 @@ public class NoteService extends AuditableService<Note> {
                 note.setContentText(tempNote.getContentText());
             }
             super.checkCreateData(noteRepository, note);
-            noteRepository.save(note);
+            return noteRepository.save(note);
         }
+        return null;
     }
 
-    public void createNote(@Valid Note note, String userId) throws CustomException {
+    public Note createNote(@Valid Note note, String userId) throws CustomException {
         User user = userService.getUser(userId);
         Theme theme = note.getTheme();
+        note.setUser(user);
         if (themeService.isNotNullAndIdNotNull(theme) && themeService.existsByIdAndUser(theme.getId(), user)) {
-            noteRepository.save(note);
+            return noteRepository.save(note);
         }
+        return null;
     }
 
-    public void createNote(@Valid Note note) throws CustomException {
+    public Note createNote(@Valid Note note) throws CustomException {
         User user = userService.getUser(note.getUser().getId().toString());
-        createNote(note, user.getId().toString());
+        return createNote(note, user.getId().toString());
     }
 
 }
