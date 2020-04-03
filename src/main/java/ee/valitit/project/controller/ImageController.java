@@ -24,7 +24,6 @@ public class ImageController {
 
     private ImageService imageService;
 
-    @PreAuthorize("hasRole('USER')")
     @PostMapping("/uploadImage")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) throws CustomException {
         Image image = imageService.storeFile(file);
@@ -40,7 +39,6 @@ public class ImageController {
         return new ResponseEntity<>(imageDTO, HttpStatus.OK);
     }
 
-    @PreAuthorize("permitAll()")
     @GetMapping("/getImage/{imageId}")
     public ResponseEntity<?> downloadFile(@PathVariable String imageId) throws CustomException {
         Image image = imageService.getFile(imageId);

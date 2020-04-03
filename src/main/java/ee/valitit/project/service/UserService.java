@@ -37,9 +37,6 @@ public class UserService extends AuditableService<User> {
             throw new CustomException("Password should contain minimum " +
                     "eight characters, at least one letter and one number!", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        if (user.getProfilePictureUrl() == null || user.getProfilePictureUrl().isEmpty()) {
-            user.setProfilePictureUrl("https://pngimage.net/wp-content/uploads/2018/05/default-user-image-png-7.png");
-        }
         Role role = roleRepository.findByName("ROLE_USER");
         user.getRoles().add(role);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -115,9 +112,6 @@ public class UserService extends AuditableService<User> {
             }
             if(user.getProfilePictureUrl() == null) {
                 user.setProfilePictureUrl(tempUser.getProfilePictureUrl());
-            }
-            if(user.getGender() == null) {
-                user.setGender(tempUser.getGender());
             }
             if(user.getCategories() == null || user.getCategories().isEmpty()) {
                 user.setCategories(tempUser.getCategories());

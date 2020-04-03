@@ -20,7 +20,6 @@ public class JWTUser implements UserDetails {
     private String lastName;
     private String profilePictureUrl;
     private String email;
-    private Boolean gender;
     private Collection<? extends GrantedAuthority> authorities;
 
     @Override

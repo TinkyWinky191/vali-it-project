@@ -49,9 +49,6 @@ public class User extends AuditableEntity {
     @Column(name = "email", unique = true)
     private String email;
 
-    @Column(name = "gender")
-    private Boolean gender;
-
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "user")
     @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
     @JsonIdentityReference(alwaysAsId = true)

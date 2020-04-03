@@ -12,7 +12,6 @@ public final class DomainDTOFabric {
                 .lastName(user.getLastName())
                 .profilePictureUrl(user.getProfilePictureUrl())
                 .email(user.getEmail())
-                .gender(user.getGender())
                 .build();
     }
 

@@ -13,6 +13,5 @@ public class UserDTO {
     private String lastName;
     private String profilePictureUrl;
     private String email;
-    private boolean gender;
 
 }
