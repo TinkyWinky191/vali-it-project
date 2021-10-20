@@ -92,12 +92,6 @@
 
                     <generateGitPropertiesFile>true</generateGitPropertiesFile>
                     <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
-                    <includeOnlyProperties>
-                        <includeOnlyProperty>git.build.version</includeOnlyProperty>
-                        <includeOnlyProperty>git.commit.id.abbrev</includeOnlyProperty>
-                        <includeOnlyProperty>git.closest.tag.name</includeOnlyProperty>
-                        <includeOnlyProperty>git.tags</includeOnlyProperty>
-                    </includeOnlyProperties>
                     <commitIdGenerationMode>full</commitIdGenerationMode>
                 </configuration>
             </plugin>
